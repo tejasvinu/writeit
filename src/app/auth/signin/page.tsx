@@ -2,7 +2,7 @@
 
 import { signIn, useSession } from 'next-auth/react'
 import { useState, useEffect, Suspense } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 
@@ -12,7 +12,6 @@ function SignInForm() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
   const { data: session, status } = useSession()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get('callbackUrl') || '/documents'
@@ -22,12 +21,17 @@ function SignInForm() {
   const fullText = "Welcome back to your writing journey."
   const [isFocused, setIsFocused] = useState<string | null>(null)
   
-  // Redirect to documents page if already logged in
+  // Immediate redirect if already authenticated
   useEffect(() => {
     if (status === 'authenticated') {
-      router.push('/documents')
+      window.location.href = '/documents'
     }
-  }, [status, router])
+  }, [status])
+  
+  // Show loading state while checking authentication
+  if (status === 'loading') {
+    return <SignInSkeleton />
+  }
   
   useEffect(() => {
     let i = 0;
@@ -59,22 +63,15 @@ function SignInForm() {
         setError(result.error)
         setIsLoading(false)
       } else if (result?.ok) {
-        // Force a hard navigation instead of client-side navigation
-        window.location.href = callbackUrl
+        // Use a timeout to ensure the session is properly established
+        setTimeout(() => {
+          window.location.href = '/documents'
+        }, 100)
       }
     } catch (error) {
       setError('An error occurred. Please try again.')
       setIsLoading(false)
     }
-  }
-
-  // If session is loading or user is already authenticated, show appropriate UI
-  if (status === 'loading') {
-    return <SignInSkeleton />
-  }
-  
-  if (status === 'authenticated') {
-    return <SignInSkeleton /> // Will redirect via useEffect
   }
 
   return (
