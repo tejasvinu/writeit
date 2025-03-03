@@ -2,7 +2,7 @@ import { connectToDatabase } from "@/lib/mongodb"
 import { Document } from "@/models/Document"
 import { getServerSession } from "next-auth"
 import { NextResponse } from "next/server"
-import { authOptions } from "../auth/[...nextauth]/route"
+import { authOptions } from "../auth/[...nextauth]/options"
 import { DocumentType, DocumentStatus } from "@/types/Document"
 
 // Get all documents for the current user

@@ -21,6 +21,14 @@ interface ContextMenuProps {
   onCreateNew?: (isFolder: boolean) => void
 }
 
+interface MenuItemProps {
+  icon: React.ForwardRefExoticComponent<React.SVGProps<SVGSVGElement>>
+  label: string
+  onClick?: () => void
+  shortcut?: string
+  destructive?: boolean
+}
+
 export default function ContextMenu({
   x,
   y,
@@ -51,9 +59,9 @@ export default function ContextMenu({
     setIsRenaming(false)
   }
 
-  const MenuItem = ({ icon: Icon, label, onClick, shortcut, destructive = false }) => (
+  const MenuItem = ({ icon: Icon, label, onClick, shortcut, destructive = false }: MenuItemProps) => (
     <button
-      onClick={onClick}
+      onClick={() => onClick?.()}
       className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center justify-between group ${
         destructive ? 'text-red-600 hover:bg-red-50' : ''
       }`}

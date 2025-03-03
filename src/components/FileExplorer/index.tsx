@@ -7,6 +7,13 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useCallback, useState } from 'react'
 import ContextMenu from './ContextMenu'
 
+interface ContextMenuState {
+  x: number;
+  y: number;
+  type: 'document' | 'folder' | 'background';
+  id: string | null;
+}
+
 export default function FileExplorer() {
   const router = useRouter()
   const {
@@ -22,19 +29,19 @@ export default function FileExplorer() {
     setCurrentPath,
   } = useDocuments()
 
-  const [contextMenu, setContextMenu] = useState(null)
+  const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
 
   const handleDocumentSelect = useCallback((id: string) => {
     router.push(`/editor?id=${id}`)
   }, [router])
 
-  const handleContextMenu = useCallback((e: React.MouseEvent, type: string, id?: string) => {
+  const handleContextMenu = useCallback((e: React.MouseEvent, type: ContextMenuState['type'], id?: string) => {
     e.preventDefault()
     setContextMenu({
       x: e.clientX,
       y: e.clientY,
       type,
-      id
+      id: id || null
     })
   }, [])
 
@@ -152,8 +159,8 @@ export default function FileExplorer() {
           y={contextMenu.y}
           type={contextMenu.type}
           onClose={() => setContextMenu(null)}
-          onRename={contextMenu.id ? (newTitle) => handleRename(contextMenu.id, newTitle) : undefined}
-          onDelete={contextMenu.id ? () => handleDelete(contextMenu.id) : undefined}
+          onRename={contextMenu.id ? (newTitle) => handleRename(contextMenu.id!, newTitle) : undefined}
+          onDelete={contextMenu.id ? () => handleDelete(contextMenu.id!) : undefined}
           onCreateNew={handleCreateNew}
         />
       )}

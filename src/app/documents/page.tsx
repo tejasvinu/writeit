@@ -9,22 +9,30 @@ import { useRouter } from 'next/navigation';
 
 export default function DocumentsPage() {
   const router = useRouter();
-  const { createDocument, createFolder, currentFolder } = useDocuments();
+  const { createDocument, currentPath } = useDocuments();
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
   const [isCreatingDocument, setIsCreatingDocument] = useState(false);
   const [newDocumentType, setNewDocumentType] = useState<DocumentType>('chapter');
 
-  const handleCreateDocument = () => {
-    const newDoc = createDocument(currentFolder?.id, newDocumentType);
+  const handleCreateDocument = async () => {
+    const newDoc = await createDocument({
+      title: 'New Document',
+      isFolder: false,
+      parentPath: currentPath
+    });
     setIsCreatingDocument(false);
-    router.push(`/editor?doc=${newDoc.id}`);
+    router.push(`/editor/${newDoc._id}`);
   };
 
-  const handleCreateFolder = (e: React.FormEvent) => {
+  const handleCreateFolder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newFolderName.trim()) {
-      createFolder(newFolderName.trim());
+      await createDocument({
+        title: newFolderName.trim(),
+        isFolder: true,
+        parentPath: currentPath
+      });
       setNewFolderName('');
       setIsCreatingFolder(false);
     }

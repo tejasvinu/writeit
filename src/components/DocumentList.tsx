@@ -11,8 +11,8 @@ export default function DocumentList() {
     isLoading,
     error,
     createDocument,
-    currentFolder,
-    setCurrentFolder,
+    currentPath,
+    setCurrentPath,
   } = useDocuments()
   const [isCreating, setIsCreating] = useState(false)
   const [newTitle, setNewTitle] = useState('')

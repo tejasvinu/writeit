@@ -2,16 +2,13 @@ import { connectToDatabase } from "@/lib/mongodb"
 import { Document } from "@/models/Document"
 import { getServerSession } from "next-auth"
 import { NextResponse } from "next/server"
-import { authOptions } from "../../auth/[...nextauth]/route"
+import { authOptions } from "../../auth/[...nextauth]/options"
 import mongoose from "mongoose"
 
 // Get a single document
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: Request, context: any) {
+  const { params } = context
   try {
-    const id = await params.id
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -20,7 +17,7 @@ export async function GET(
     await connectToDatabase()
 
     const document = await Document.findOne({
-      _id: id,
+      _id: params.id,
       owner: session.user.id,
     })
 
@@ -42,12 +39,9 @@ export async function GET(
 }
 
 // Update a document
-export async function PATCH(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(request: Request, context: any) {
+  const { params } = context
   try {
-    const id = await params.id
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -58,14 +52,14 @@ export async function PATCH(
 
     await connectToDatabase()
 
-    const document = await Document.findOne({ _id: id, owner: session.user.id })
+    const document = await Document.findOne({ _id: params.id, owner: session.user.id })
     if (!document) {
       return NextResponse.json({ error: "Document not found" }, { status: 404 })
     }
 
     // Handle document move if newParentPath is provided
     if (newParentPath !== undefined) {
-      await Document.moveDocument(session.user.id, id, newParentPath)
+      await Document.moveDocument(session.user.id, params.id, newParentPath)
     }
 
     // Build flat update object
@@ -103,13 +97,13 @@ export async function PATCH(
         .replace(/<[^>]*>/g, '')
         .trim()
         .split(/\s+/)
-        .filter(word => word.length > 0)
+        .filter((word: string) => word.length > 0)
         .length
     }
 
     // Use $set to update only specified fields
     const updatedDoc = await Document.findOneAndUpdate(
-      { _id: id, owner: session.user.id },
+      { _id: params.id, owner: session.user.id },
       { $set: updateData },
       { 
         new: true,
@@ -128,12 +122,9 @@ export async function PATCH(
 }
 
 // Delete a document and its children (if it's a folder)
-export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: Request, context: any) {
+  const { params } = context
   try {
-    const id = await params.id
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -146,7 +137,7 @@ export async function DELETE(
     await dbSession.startTransaction()
 
     try {
-      const document = await Document.findOne({ _id: id, owner: session.user.id })
+      const document = await Document.findOne({ _id: params.id, owner: session.user.id })
       if (!document) {
         throw new Error("Document not found")
       }

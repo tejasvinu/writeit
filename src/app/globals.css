@@ -19,3 +19,79 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Custom animations for landing page */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+@keyframes floatDelayed {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: floatDelayed 6s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+.animate-float-slow {
+  animation: floatSlow 8s ease-in-out infinite;
+  animation-delay: 1s;
+}
+
+.animate-blink {
+  animation: blink 1s step-start infinite;
+}
+
+/* Add first-letter styling support */
+.first-letter\:text-5xl::first-letter {
+  font-size: 3rem;
+}
+
+.first-letter\:font-serif::first-letter {
+  font-family: serif;
+}
+
+.first-letter\:mr-3::first-letter {
+  margin-right: 0.75rem;
+}
+
+.first-letter\:float-left::first-letter {
+  float: left;
+}
+
+.first-letter\:text-amber-800::first-letter {
+  color: #92400e;
+}

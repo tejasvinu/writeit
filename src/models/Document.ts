@@ -20,6 +20,7 @@ const documentMetadataSchema = new mongoose.Schema({
 }, { _id: false });
 
 export interface IDocument {
+  _id: mongoose.Types.ObjectId;
   title: string;
   content: string;
   isFolder: boolean;
@@ -37,6 +38,13 @@ export interface IDocument {
     location?: string;
     timeline?: string;
   };
+}
+
+// Add static methods to interface
+interface DocumentModel extends mongoose.Model<IDocument> {
+  getChildren(ownerId: string, parentPath: string): Promise<IDocument[]>;
+  getAncestors(ownerId: string, path: string): Promise<IDocument[]>;
+  moveDocument(ownerId: string, documentId: string, newParentPath: string): Promise<mongoose.mongo.BulkWriteResult>;
 }
 
 const documentSchema = new mongoose.Schema<IDocument>({
@@ -161,7 +169,7 @@ documentSchema.statics.moveDocument = async function(
     path: new RegExp(`^${oldPath}/`)
   });
 
-  const bulkOps = descendantDocs.map(desc => ({
+  const bulkOps = descendantDocs.map((desc: IDocument) => ({
     updateOne: {
       filter: { _id: desc._id },
       update: {
@@ -187,4 +195,4 @@ documentSchema.statics.moveDocument = async function(
   return this.bulkWrite(bulkOps);
 };
 
-export const Document = mongoose.models.Document || mongoose.model<IDocument>('Document', documentSchema);
+export const Document = (mongoose.models.Document || mongoose.model<IDocument, DocumentModel>('Document', documentSchema)) as DocumentModel;

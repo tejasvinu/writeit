@@ -83,7 +83,13 @@ const MenuBar = ({ editor, onSave }: { editor: TiptapEditor | null; onSave: () =
   )
 }
 
-export default function Editor() {
+interface EditorProps {
+  content?: string;
+  onChange?: (content: string) => void;
+  className?: string;
+}
+
+export default function Editor({ content, onChange, className }: EditorProps) {
   const { currentDocument, updateDocument, saveDocument } = useDocuments()
   const [wordCount, setWordCount] = useState(0)
   const [localTitle, setLocalTitle] = useState(currentDocument?.title || '')
@@ -125,10 +131,10 @@ export default function Editor() {
         }
       }),
     ],
-    content: currentDocument?.content || '<p>Start writing here...</p>',
+    content: content || currentDocument?.content || '<p>Start writing here...</p>',
     editorProps: {
       attributes: {
-        class: 'prose prose-lg xl:prose-xl mx-auto focus:outline-none min-h-[calc(100vh-12rem)] prose-headings:font-serif prose-h1:text-4xl prose-h2:text-3xl prose-p:text-gray-700 prose-p:leading-relaxed prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline prose-blockquote:border-l-4 prose-blockquote:border-gray-300 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-gray-700 prose-strong:text-gray-900 prose-em:text-gray-900 prose-ul:my-6 prose-li:my-2 prose-img:rounded-lg',
+        class: `prose prose-lg xl:prose-xl mx-auto focus:outline-none min-h-[calc(100vh-12rem)] prose-headings:font-serif prose-h1:text-4xl prose-h2:text-3xl prose-p:text-gray-700 prose-p:leading-relaxed prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline prose-blockquote:border-l-4 prose-blockquote:border-gray-300 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-gray-700 prose-strong:text-gray-900 prose-em:text-gray-900 prose-ul:my-6 prose-li:my-2 prose-img:rounded-lg ${className || ''}`,
       },
     },
     onUpdate: ({ editor }) => {
@@ -136,6 +142,11 @@ export default function Editor() {
       const text = editor.getText()
       const count = text.split(/\s+/).filter(word => word.length > 0).length
       setWordCount(count)
+
+      // Call onChange prop if provided
+      if (onChange) {
+        onChange(editor.getHTML())
+      }
 
       // Clear any existing save timeout
       if (saveTimeoutRef.current) {
@@ -147,8 +158,8 @@ export default function Editor() {
       saveTimeoutRef.current = setTimeout(() => {
         const html = editor.getHTML()
         
-        // Only save if content actually changed
-        if (currentDocument && html !== contentRef.current) {
+        // Only save if content actually changed and we're not using external onChange
+        if (currentDocument && html !== contentRef.current && !onChange) {
           contentRef.current = html  // Update ref to avoid redundant saves
           handleSaveContent(html, count)
         }
@@ -184,9 +195,11 @@ export default function Editor() {
       const updatedDoc = {
         ...currentDocument,
         content: content,
-        updatedAt: new Date(),
+        updatedAt: new Date().toISOString(),
         metadata: {
           ...currentDocument.metadata,
+          type: currentDocument.metadata?.type || 'chapter',
+          status: currentDocument.metadata?.status || 'draft',
           wordCount: count
         }
       }
@@ -212,9 +225,11 @@ export default function Editor() {
       const updatedDoc = {
         ...currentDocument,
         content: html,
-        updatedAt: new Date(),
+        updatedAt: new Date().toISOString(),
         metadata: {
           ...currentDocument.metadata,
+          type: currentDocument.metadata?.type || 'chapter',
+          status: currentDocument.metadata?.status || 'draft',
           wordCount
         }
       }
@@ -246,7 +261,7 @@ export default function Editor() {
   }
 
   return (
-    <div className="border rounded-lg shadow-sm h-full flex flex-col bg-white">
+    <div className={`border rounded-lg shadow-sm h-full flex flex-col bg-white ${className || ''}`}>
       <div className="p-4 border-b bg-gray-50 flex justify-between items-center">
         <input
           type="text"
@@ -271,7 +286,9 @@ export default function Editor() {
                   ...currentDocument,
                   metadata: {
                     ...currentDocument.metadata,
-                    status: e.target.value as DocumentStatus
+                    type: currentDocument.metadata?.type || 'chapter',
+                    status: e.target.value as DocumentStatus,
+                    wordCount: currentDocument.metadata?.wordCount || 0
                   }
                 }
                 saveDocument(updatedDoc)
@@ -305,6 +322,9 @@ export default function Editor() {
                   ...currentDocument,
                   metadata: {
                     ...currentDocument.metadata,
+                    type: currentDocument.metadata?.type || 'chapter',
+                    status: currentDocument.metadata?.status || 'draft',
+                    wordCount: currentDocument.metadata?.wordCount || 0,
                     synopsis: e.target.value
                   }
                 }
