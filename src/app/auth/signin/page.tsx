@@ -1,6 +1,6 @@
 'use client'
 
-import { signIn } from 'next-auth/react'
+import { signIn, useSession } from 'next-auth/react'
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
@@ -13,6 +13,7 @@ function SignInForm() {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const { data: session, status } = useSession()
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get('callbackUrl') || '/documents'
   
@@ -20,6 +21,13 @@ function SignInForm() {
   const [displayText, setDisplayText] = useState("")
   const fullText = "Welcome back to your writing journey."
   const [isFocused, setIsFocused] = useState<string | null>(null)
+  
+  // Redirect to documents page if already logged in
+  useEffect(() => {
+    if (status === 'authenticated') {
+      router.push('/documents')
+    }
+  }, [status, router])
   
   useEffect(() => {
     let i = 0;
@@ -44,19 +52,29 @@ function SignInForm() {
       const result = await signIn('credentials', {
         email,
         password,
-        redirect: true,
-        callbackUrl,
+        redirect: false,
       })
 
-      // Note: With redirect: true, the code below won't execute unless there's an error
       if (result?.error) {
         setError(result.error)
         setIsLoading(false)
+      } else if (result?.ok) {
+        // Force a hard navigation instead of client-side navigation
+        window.location.href = callbackUrl
       }
     } catch (error) {
       setError('An error occurred. Please try again.')
       setIsLoading(false)
     }
+  }
+
+  // If session is loading or user is already authenticated, show appropriate UI
+  if (status === 'loading') {
+    return <SignInSkeleton />
+  }
+  
+  if (status === 'authenticated') {
+    return <SignInSkeleton /> // Will redirect via useEffect
   }
 
   return (
