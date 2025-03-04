@@ -30,6 +30,7 @@ export default function FileExplorer() {
   } = useDocuments()
 
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null)
 
   const handleDocumentSelect = useCallback((id: string) => {
     router.push(`/editor?id=${id}`)
@@ -79,7 +80,6 @@ export default function FileExplorer() {
   // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't trigger shortcuts if user is typing in an input
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
         return
       }
@@ -126,43 +126,62 @@ export default function FileExplorer() {
   }, [currentDocument, currentPath, handleCreateNew, handleDelete, setCurrentPath])
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col bg-background/50 backdrop-blur-sm">
       <ExplorerHeader />
       
       <div className="flex-1 overflow-hidden">
         <div className="h-full flex">
           {/* Folder tree sidebar */}
-          <div className="w-64 border-r p-4 overflow-y-auto">
+          <div className="w-64 border-r border-accent-subtle bg-surface-elevated/50 backdrop-blur-sm p-4 overflow-y-auto">
             <div 
-              className="space-y-2"
+              className="space-y-2 relative"
               onContextMenu={(e) => handleContextMenu(e, 'background')}
+              onMouseLeave={() => setHoveredItem(null)}
             >
-              <FolderTree path="/root" />
+              {/* Animated highlight for hovered items */}
+              {hoveredItem && (
+                <div 
+                  className="absolute inset-0 bg-primary-subtle rounded-lg transition-all duration-300 transform"
+                  style={{
+                    top: `${documents.findIndex(d => d._id === hoveredItem) * 2.5}rem`,
+                    height: '2.5rem'
+                  }}
+                />
+              )}
+              <FolderTree 
+                path="/root" 
+                onHover={setHoveredItem}
+              />
             </div>
           </div>
 
           {/* Main content area */}
-          <div className="flex-1 overflow-y-auto">
-            <DocumentViews
-              documents={documents}
-              onContextMenu={handleContextMenu}
-              onFolderClick={(doc) => setCurrentPath(doc.path)}
-            />
+          <div className="flex-1 overflow-y-auto bg-gradient-to-br from-background to-background-soft p-4">
+            <div className="grid gap-4 animate-fade-in">
+              <DocumentViews
+                documents={documents}
+                onContextMenu={handleContextMenu}
+                onFolderClick={(doc) => setCurrentPath(doc.path)}
+                onHover={setHoveredItem}
+              />
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Context menu */}
+      {/* Context menu with enhanced animation */}
       {contextMenu && (
-        <ContextMenu
-          x={contextMenu.x}
-          y={contextMenu.y}
-          type={contextMenu.type}
-          onClose={() => setContextMenu(null)}
-          onRename={contextMenu.id ? (newTitle) => handleRename(contextMenu.id!, newTitle) : undefined}
-          onDelete={contextMenu.id ? () => handleDelete(contextMenu.id!) : undefined}
-          onCreateNew={handleCreateNew}
-        />
+        <div className="fixed inset-0 bg-foreground/5 backdrop-blur-sm z-50 animate-fade-in">
+          <ContextMenu
+            x={contextMenu.x}
+            y={contextMenu.y}
+            type={contextMenu.type}
+            onClose={() => setContextMenu(null)}
+            onRename={contextMenu.id ? (newTitle) => handleRename(contextMenu.id!, newTitle) : undefined}
+            onDelete={contextMenu.id ? () => handleDelete(contextMenu.id!) : undefined}
+            onCreateNew={handleCreateNew}
+          />
+        </div>
       )}
     </div>
   )

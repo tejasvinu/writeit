@@ -51,6 +51,19 @@ export async function POST(request: Request) {
 
     await connectToDatabase()
 
+    // Check if a document with the same title exists in the same path
+    const existingDoc = await Document.findOne({
+      owner: session.user.id,
+      path: `${parentPath}/${title}`
+    })
+
+    if (existingDoc) {
+      return NextResponse.json(
+        { error: 'A document with this title already exists in this location' },
+        { status: 409 }
+      )
+    }
+
     // Calculate word count if there's content
     const wordCount = content ? content.trim().split(/\s+/).length : 0
 

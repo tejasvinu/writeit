@@ -88,7 +88,7 @@ const documentSchema = new mongoose.Schema<IDocument>({
 // Add indexes for better query performance
 documentSchema.index({ owner: 1, path: 1 });
 documentSchema.index({ path: 1 });
-documentSchema.index({ title: 1, owner: 1 });
+documentSchema.index({ owner: 1, title: 1, path: 1 }, { unique: true }); // Add unique compound index
 documentSchema.index({ owner: 1, parent: 1 });
 
 // Pre-save middleware to ensure proper document setup

@@ -62,16 +62,25 @@ export default function ContextMenu({
   const MenuItem = ({ icon: Icon, label, onClick, shortcut, destructive = false }: MenuItemProps) => (
     <button
       onClick={() => onClick?.()}
-      className={`w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center justify-between group ${
-        destructive ? 'text-red-600 hover:bg-red-50' : ''
+      className={`w-full px-4 py-2 text-left text-sm flex items-center justify-between group
+        transition-all duration-300 relative overflow-hidden ${
+        destructive 
+          ? 'text-error hover:bg-error-light' 
+          : 'text-foreground hover:bg-primary-subtle hover:text-primary-dark'
       }`}
     >
-      <div className="flex items-center">
-        <Icon className="w-4 h-4 mr-3" />
+      <div className="absolute inset-0 w-0 bg-gradient-to-r from-primary-subtle to-accent-subtle opacity-0 
+        transition-all duration-300 group-hover:w-full group-hover:opacity-100"></div>
+      <div className="flex items-center relative">
+        <Icon className={`w-4 h-4 mr-3 transition-transform duration-300 group-hover:scale-110 ${
+          destructive ? 'text-error' : 'text-foreground-muted group-hover:text-primary'
+        }`} />
         {label}
       </div>
       {shortcut && (
-        <span className="text-xs text-gray-400 group-hover:text-gray-500">{shortcut}</span>
+        <span className="text-xs text-foreground-muted transition-colors duration-300 group-hover:text-primary-dark relative">
+          {shortcut}
+        </span>
       )}
     </button>
   )
@@ -79,7 +88,8 @@ export default function ContextMenu({
   return (
     <div
       ref={menuRef}
-      className="fixed bg-white rounded-lg shadow-lg border py-1 w-64 z-50"
+      className="fixed bg-surface-elevated rounded-lg shadow-lg border border-accent-subtle py-1 w-64 z-50
+        backdrop-blur-sm animate-fade-in"
       style={{ top: y, left: x }}
       onClick={(e) => e.stopPropagation()}
     >
@@ -110,10 +120,16 @@ export default function ContextMenu({
                   if (e.key === 'Enter') handleRename()
                   if (e.key === 'Escape') setIsRenaming(false)
                 }}
-                className="w-full px-2 py-1 text-sm border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-2 py-1 text-sm border border-accent-subtle rounded-lg
+                  bg-surface/50 backdrop-blur-sm text-foreground placeholder-foreground-muted
+                  focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary-light/30
+                  transition-all duration-300"
                 placeholder="Enter new name"
                 autoFocus
               />
+              <div className="text-xs text-foreground-muted mt-1 animate-fade-in">
+                Press Enter to save, Escape to cancel
+              </div>
             </div>
           ) : (
             <>

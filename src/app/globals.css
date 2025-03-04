@@ -2,15 +2,67 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .h-screen-minus-nav {
+    height: calc(100vh - 64px);
+  }
+}
+
 :root {
   --background: #ffffff;
+  --background-soft: #fafafa;
+  --background-muted: #f5f5f5;
   --foreground: #171717;
+  --foreground-muted: #373737;
+  --primary: #b45309;
+  --primary-light: #f59e0b;
+  --primary-dark: #92400e;
+  --primary-subtle: rgba(245, 158, 11, 0.1);
+  --secondary: #f5f5f4;
+  --secondary-light: #fafaf9;
+  --secondary-dark: #e7e5e4;
+  --accent: #b45309;
+  --accent-light: #fef3c7;
+  --accent-subtle: rgba(180, 83, 9, 0.15);
+  --success: #15803d;
+  --success-light: #bbf7d0;
+  --error: #b91c1c;
+  --error-light: #fecaca;
+  --surface: #ffffff;
+  --surface-light: #ffffff80;
+  --surface-elevated: #ffffff;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
+    --background-soft: #121212;
+    --background-muted: #1a1a1a;
     --foreground: #ededed;
+    --foreground-muted: #a3a3a3;
+    --primary: #f59e0b;
+    --primary-light: #fbbf24;
+    --primary-dark: #d97706;
+    --primary-subtle: rgba(245, 158, 11, 0.15);
+    --secondary: #1f1f1f;
+    --secondary-light: #2d2d2d;
+    --secondary-dark: #171717;
+    --accent: #f59e0b;
+    --accent-light: rgba(254, 243, 199, 0.1);
+    --accent-subtle: rgba(245, 158, 11, 0.2);
+    --success: #22c55e;
+    --success-light: rgba(187, 247, 208, 0.1);
+    --error: #ef4444;
+    --error-light: rgba(254, 202, 202, 0.1);
+    --surface: #171717;
+    --surface-light: #17171780;
+    --surface-elevated: #1f1f1f;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
   }
 }
 
@@ -57,6 +109,69 @@ body {
   }
 }
 
+@keyframes shine {
+  0% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: -200% center;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseSubtle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+@keyframes floatWithShadow {
+  0%, 100% {
+    transform: translateY(0);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  }
+  50% {
+    transform: translateY(-20px);
+    box-shadow: 0 25px 30px rgba(0,0,0,0.1);
+  }
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes paperRipple {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
 .animate-float {
   animation: float 4s ease-in-out infinite;
 }
@@ -73,6 +188,10 @@ body {
 
 .animate-blink {
   animation: blink 1s step-start infinite;
+}
+
+.animate-float-enhanced {
+  animation: floatWithShadow 4s ease-in-out infinite;
 }
 
 /* Add first-letter styling support */
@@ -94,4 +213,59 @@ body {
 
 .first-letter\:text-amber-800::first-letter {
   color: #92400e;
+}
+
+/* 3D Paper Effects */
+.paper-fold {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.5s ease-out;
+}
+
+.paper-fold::before,
+.paper-fold::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: inherit;
+  transform-origin: left;
+  transition: transform 0.5s ease-out;
+}
+
+.paper-fold::before {
+  transform: rotateY(-32deg);
+  filter: brightness(0.9);
+}
+
+.paper-fold::after {
+  transform: rotateY(32deg);
+  filter: brightness(0.8);
+}
+
+/* Interactive Elements */
+.interactive-bg {
+  background: linear-gradient(120deg, #fef3c7, #fde68a, #fcd34d);
+  background-size: 200% 200%;
+  animation: gradientShift 15s ease infinite;
+}
+
+.ripple-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple-effect::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 70%);
+  transform: scale(0);
+  animation: paperRipple 0.6s ease-out;
+}
+
+/* Floating elements with enhanced shadows */
+.float-enhanced {
+  animation: floatWithShadow 6s ease-in-out infinite;
 }

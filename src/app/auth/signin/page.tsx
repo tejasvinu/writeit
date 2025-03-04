@@ -4,35 +4,36 @@ import { signIn, useSession } from 'next-auth/react'
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
+// import Image from 'next/image'
 
 // A client component that safely uses useSearchParams
 function SignInForm() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const { data: session, status } = useSession()
+  // Authentication state
+  const { status } = useSession()
   const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get('callbackUrl') || '/documents'
-  
-  // Animation for typewriter effect
+  // const callbackUrl = searchParams?.get('callbackUrl') || '/documents'
+
+  // Form state
+  const [formState, setFormState] = useState({
+    email: '',
+    password: '',
+    error: '',
+    isLoading: false,
+  })
+
+  // UI state
   const [displayText, setDisplayText] = useState("")
-  const fullText = "Welcome back to your writing journey."
   const [isFocused, setIsFocused] = useState<string | null>(null)
+  const fullText = "Welcome back to your writing journey."
   
-  // Immediate redirect if already authenticated
+  // Handle immediate redirect if authenticated
   useEffect(() => {
     if (status === 'authenticated') {
       window.location.href = '/documents'
     }
   }, [status])
-  
-  // Show loading state while checking authentication
-  if (status === 'loading') {
-    return <SignInSkeleton />
-  }
-  
+
+  // Typewriter effect
   useEffect(() => {
     let i = 0;
     const typing = setInterval(() => {
@@ -49,29 +50,34 @@ function SignInForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
-    setIsLoading(true)
+    setFormState(prev => ({ ...prev, error: '', isLoading: true }))
 
     try {
       const result = await signIn('credentials', {
-        email,
-        password,
+        email: formState.email,
+        password: formState.password,
         redirect: false,
       })
 
       if (result?.error) {
-        setError(result.error)
-        setIsLoading(false)
+        setFormState(prev => ({ ...prev, error: result.error ?? '', isLoading: false }))
       } else if (result?.ok) {
-        // Use a timeout to ensure the session is properly established
         setTimeout(() => {
           window.location.href = '/documents'
         }, 100)
       }
     } catch (error) {
-      setError('An error occurred. Please try again.')
-      setIsLoading(false)
+      setFormState(prev => ({
+        ...prev,
+        error: 'An error occurred. Please try again.',
+        isLoading: false
+      }))
     }
+  }
+
+  // Show loading state while checking authentication
+  if (status === 'loading') {
+    return <SignInSkeleton />
   }
 
   return (
@@ -163,14 +169,14 @@ function SignInForm() {
                       name="email"
                       type="email"
                       required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      value={formState.email}
+                      onChange={(e) => setFormState(prev => ({ ...prev, email: e.target.value }))}
                       onFocus={() => setIsFocused('email')}
                       onBlur={() => setIsFocused(null)}
                       className={`appearance-none block w-full px-3 py-2 border ${isFocused === 'email' ? 'border-amber-500 ring-1 ring-amber-500' : 'border-gray-300'} rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-all duration-200`}
                       placeholder="you@example.com"
                     />
-                    <span className={`absolute right-3 top-1/2 -translate-y-1/2 transition-opacity duration-300 ${isFocused === 'email' || email ? 'opacity-100' : 'opacity-0'}`}>
+                    <span className={`absolute right-3 top-1/2 -translate-y-1/2 transition-opacity duration-300 ${isFocused === 'email' || formState.email ? 'opacity-100' : 'opacity-0'}`}>
                       <span className="animate-blink text-amber-600 font-mono">|</span>
                     </span>
                   </div>
@@ -185,14 +191,14 @@ function SignInForm() {
                       name="password"
                       type="password"
                       required
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      value={formState.password}
+                      onChange={(e) => setFormState(prev => ({ ...prev, password: e.target.value }))}
                       onFocus={() => setIsFocused('password')}
                       onBlur={() => setIsFocused(null)}
                       className={`appearance-none block w-full px-3 py-2 border ${isFocused === 'password' ? 'border-amber-500 ring-1 ring-amber-500' : 'border-gray-300'} rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm transition-all duration-200`}
                       placeholder="••••••••"
                     />
-                    <span className={`absolute right-3 top-1/2 -translate-y-1/2 transition-opacity duration-300 ${isFocused === 'password' || password ? 'opacity-100' : 'opacity-0'}`}>
+                    <span className={`absolute right-3 top-1/2 -translate-y-1/2 transition-opacity duration-300 ${isFocused === 'password' || formState.password ? 'opacity-100' : 'opacity-0'}`}>
                       <span className="animate-blink text-amber-600 font-mono">|</span>
                     </span>
                   </div>
@@ -219,19 +225,19 @@ function SignInForm() {
                 </div>
               </div>
 
-              {error && (
+              {formState.error && (
                 <div className="p-3 bg-red-50 border-l-4 border-red-500 text-red-700 text-sm">
-                  {error}
+                  {formState.error}
                 </div>
               )}
 
               <div>
                 <button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={formState.isLoading}
                   className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-amber-700 hover:bg-amber-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
-                  {isLoading ? (
+                  {formState.isLoading ? (
                     <>
                       <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>

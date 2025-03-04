@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth"
 import { NextResponse } from "next/server"
 import { authOptions } from "../../auth/[...nextauth]/options"
 import mongoose from "mongoose"
+import { isValidObjectId } from 'mongoose'
 
 // Get a single document
 export async function GET(request: Request, context: any) {
@@ -14,10 +15,14 @@ export async function GET(request: Request, context: any) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    if (!isValidObjectId(params.id)) {
+      return NextResponse.json({ error: 'Invalid document ID' }, { status: 400 })
+    }
+
     await connectToDatabase()
 
     const document = await Document.findOne({
-      _id: params.id,
+      _id: (await params).id,
       owner: session.user.id,
     })
 
@@ -47,19 +52,40 @@ export async function PATCH(request: Request, context: any) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    if (!isValidObjectId(params.id)) {
+      return NextResponse.json({ error: 'Invalid document ID' }, { status: 400 })
+    }
+
     const body = await request.json()
     const { title, content, metadata, updatedAt, newParentPath } = body
 
     await connectToDatabase()
 
-    const document = await Document.findOne({ _id: params.id, owner: session.user.id })
+    const document = await Document.findOne({ _id: (await params).id, owner: session.user.id })
     if (!document) {
       return NextResponse.json({ error: "Document not found" }, { status: 404 })
     }
 
+    // Check for duplicate title if title is being changed
+    if (title && title !== document.title) {
+      const parentPath = newParentPath || document.path.substring(0, document.path.lastIndexOf('/'))
+      const existingDoc = await Document.findOne({
+        owner: session.user.id,
+        path: `${parentPath}/${title}`,
+        _id: { $ne: params.id } // Exclude current document
+      })
+
+      if (existingDoc) {
+        return NextResponse.json(
+          { error: 'A document with this title already exists in this location' },
+          { status: 409 }
+        )
+      }
+    }
+
     // Handle document move if newParentPath is provided
     if (newParentPath !== undefined) {
-      await Document.moveDocument(session.user.id, params.id, newParentPath)
+      await Document.moveDocument(session.user.id, (await params).id, newParentPath)
     }
 
     // Build flat update object
@@ -102,16 +128,26 @@ export async function PATCH(request: Request, context: any) {
     }
 
     // Use $set to update only specified fields
-    const updatedDoc = await Document.findOneAndUpdate(
-      { _id: params.id, owner: session.user.id },
-      { $set: updateData },
-      { 
-        new: true,
-        runValidators: true,
+    try {
+      const updatedDoc = await Document.findOneAndUpdate(
+        { _id: (await params).id, owner: session.user.id },
+        { $set: updateData },
+        { 
+          new: true,
+          runValidators: true,
+        }
+      )
+      return NextResponse.json(updatedDoc)
+    } catch (error: any) {
+      // Handle unique constraint violation
+      if (error.code === 11000) {
+        return NextResponse.json(
+          { error: 'A document with this title already exists in this location' },
+          { status: 409 }
+        )
       }
-    )
-
-    return NextResponse.json(updatedDoc)
+      throw error
+    }
   } catch (error) {
     console.error('Error updating document:', error)
     if (error instanceof Error) {
@@ -130,35 +166,35 @@ export async function DELETE(request: Request, context: any) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    if (!isValidObjectId(params.id)) {
+      return NextResponse.json({ error: 'Invalid document ID' }, { status: 400 })
+    }
+
     await connectToDatabase()
 
-    // Start a session for transaction
-    const dbSession = await mongoose.startSession()
-    await dbSession.startTransaction()
+    // Find the document first to get its path
+    const document = await Document.findOne({ 
+      _id: params.id,
+      owner: session.user.id 
+    })
 
-    try {
-      const document = await Document.findOne({ _id: params.id, owner: session.user.id })
-      if (!document) {
-        throw new Error("Document not found")
-      }
-
-      // Delete all documents with paths that start with this document's path
-      await Document.deleteMany(
-        {
-          owner: session.user.id,
-          path: new RegExp(`^${document.path}(/|$)`)
-        },
-        { session: dbSession }
-      )
-
-      await dbSession.commitTransaction()
-      return NextResponse.json({ success: true })
-    } catch (error) {
-      await dbSession.abortTransaction()
-      throw error
-    } finally {
-      dbSession.endSession()
+    if (!document) {
+      return NextResponse.json({ error: 'Document not found' }, { status: 404 })
     }
+
+    // Delete the document and all its descendants using path-based matching
+    const result = await Document.deleteMany({
+      owner: session.user.id,
+      $or: [
+        { _id: params.id },
+        { path: new RegExp(`^${document.path}/`) }
+      ]
+    })
+
+    return NextResponse.json({ 
+      message: 'Document and its descendants deleted successfully',
+      deletedCount: result.deletedCount
+    })
   } catch (error) {
     console.error('Error deleting document:', error)
     return NextResponse.json(
