@@ -9,20 +9,24 @@ import { isValidObjectId } from 'mongoose'
 // Get a single document
 export async function GET(request: Request, context: any) {
   const { params } = context
+  
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    if (!isValidObjectId(params.id)) {
+    // Await params before using its properties
+    const id = (await params).id
+    
+    if (!isValidObjectId(id)) {
       return NextResponse.json({ error: 'Invalid document ID' }, { status: 400 })
     }
 
     await connectToDatabase()
 
     const document = await Document.findOne({
-      _id: (await params).id,
+      _id: id,
       owner: session.user.id,
     })
 
@@ -46,13 +50,17 @@ export async function GET(request: Request, context: any) {
 // Update a document
 export async function PATCH(request: Request, context: any) {
   const { params } = context
+  
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    if (!isValidObjectId(params.id)) {
+    // Await params before using its properties
+    const id = (await params).id
+    
+    if (!isValidObjectId(id)) {
       return NextResponse.json({ error: 'Invalid document ID' }, { status: 400 })
     }
 
@@ -61,7 +69,7 @@ export async function PATCH(request: Request, context: any) {
 
     await connectToDatabase()
 
-    const document = await Document.findOne({ _id: (await params).id, owner: session.user.id })
+    const document = await Document.findOne({ _id: id, owner: session.user.id })
     if (!document) {
       return NextResponse.json({ error: "Document not found" }, { status: 404 })
     }
@@ -72,7 +80,7 @@ export async function PATCH(request: Request, context: any) {
       const existingDoc = await Document.findOne({
         owner: session.user.id,
         path: `${parentPath}/${title}`,
-        _id: { $ne: params.id } // Exclude current document
+        _id: { $ne: id } // Exclude current document
       })
 
       if (existingDoc) {
@@ -85,7 +93,7 @@ export async function PATCH(request: Request, context: any) {
 
     // Handle document move if newParentPath is provided
     if (newParentPath !== undefined) {
-      await Document.moveDocument(session.user.id, (await params).id, newParentPath)
+      await Document.moveDocument(session.user.id, id, newParentPath)
     }
 
     // Build flat update object
@@ -130,7 +138,7 @@ export async function PATCH(request: Request, context: any) {
     // Use $set to update only specified fields
     try {
       const updatedDoc = await Document.findOneAndUpdate(
-        { _id: (await params).id, owner: session.user.id },
+        { _id: id, owner: session.user.id },
         { $set: updateData },
         { 
           new: true,
@@ -160,13 +168,17 @@ export async function PATCH(request: Request, context: any) {
 // Delete a document and its children (if it's a folder)
 export async function DELETE(request: Request, context: any) {
   const { params } = context
+  
   try {
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    if (!isValidObjectId(params.id)) {
+    // Await params before using its properties
+    const id = (await params).id
+    
+    if (!isValidObjectId(id)) {
       return NextResponse.json({ error: 'Invalid document ID' }, { status: 400 })
     }
 
@@ -174,7 +186,7 @@ export async function DELETE(request: Request, context: any) {
 
     // Find the document first to get its path
     const document = await Document.findOne({ 
-      _id: params.id,
+      _id: id,
       owner: session.user.id 
     })
 
@@ -186,7 +198,7 @@ export async function DELETE(request: Request, context: any) {
     const result = await Document.deleteMany({
       owner: session.user.id,
       $or: [
-        { _id: params.id },
+        { _id: id },
         { path: new RegExp(`^${document.path}/`) }
       ]
     })

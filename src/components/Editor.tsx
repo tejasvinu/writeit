@@ -146,16 +146,21 @@ export default function Editor({ content, onChange, className, onExit }: EditorP
   const [saveError, setSaveError] = useState<string | null>(null)
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [showSynopsis, setShowSynopsis] = useState(false)
+  const [localSynopsis, setLocalSynopsis] = useState(currentDocument?.metadata?.synopsis || '')
   const editorContainerRef = useRef<HTMLDivElement>(null)
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const contentRef = useRef<string | null>(null)
+  const synopsisTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   
-  // Update local title when document changes
+  // Update local title and synopsis when document changes
   useEffect(() => {
     if (currentDocument?.title) {
       setLocalTitle(currentDocument.title)
     }
-  }, [currentDocument?.title])
+    if (currentDocument?.metadata?.synopsis !== undefined) {
+      setLocalSynopsis(currentDocument.metadata.synopsis)
+    }
+  }, [currentDocument?.title, currentDocument?.metadata?.synopsis])
 
   // Debounced title update
   useEffect(() => {
@@ -167,6 +172,37 @@ export default function Editor({ content, onChange, className, onExit }: EditorP
 
     return () => clearTimeout(timer)
   }, [localTitle, currentDocument, updateDocument])
+
+  // Debounced synopsis update
+  useEffect(() => {
+    // Clear any existing timeout
+    if (synopsisTimeoutRef.current) {
+      clearTimeout(synopsisTimeoutRef.current)
+    }
+
+    // Only save if document exists and synopsis has changed
+    if (currentDocument && currentDocument.metadata?.synopsis !== localSynopsis) {
+      synopsisTimeoutRef.current = setTimeout(() => {
+        const updatedDoc = {
+          ...currentDocument,
+          metadata: {
+            ...currentDocument.metadata,
+            type: currentDocument.metadata?.type || 'chapter',
+            status: currentDocument.metadata?.status || 'draft',
+            wordCount: currentDocument.metadata?.wordCount || 0,
+            synopsis: localSynopsis
+          }
+        }
+        saveDocument(updatedDoc)
+      }, 1000) // 1 second debounce
+    }
+
+    return () => {
+      if (synopsisTimeoutRef.current) {
+        clearTimeout(synopsisTimeoutRef.current)
+      }
+    }
+  }, [localSynopsis, currentDocument, saveDocument])
 
   // Store current content for comparison
   useEffect(() => {
@@ -257,11 +293,14 @@ export default function Editor({ content, onChange, className, onExit }: EditorP
     }
   })
 
-  // Clean up save timeout on unmount
+  // Clean up save timeouts on unmount
   useEffect(() => {
     return () => {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current)
+      }
+      if (synopsisTimeoutRef.current) {
+        clearTimeout(synopsisTimeoutRef.current)
       }
     }
   }, [])
@@ -489,22 +528,8 @@ export default function Editor({ content, onChange, className, onExit }: EditorP
             </div>
             <textarea
               placeholder="Write a brief summary of this chapter..."
-              value={currentDocument?.metadata?.synopsis || ''}
-              onChange={(e) => {
-                if (currentDocument) {
-                  const updatedDoc = {
-                    ...currentDocument,
-                    metadata: {
-                      ...currentDocument.metadata,
-                      type: currentDocument.metadata?.type || 'chapter',
-                      status: currentDocument.metadata?.status || 'draft',
-                      wordCount: currentDocument.metadata?.wordCount || 0,
-                      synopsis: e.target.value
-                    }
-                  }
-                  saveDocument(updatedDoc)
-                }
-              }}
+              value={localSynopsis}
+              onChange={(e) => setLocalSynopsis(e.target.value)}
               className="synopsis-textarea w-full h-24 p-3 border border-amber-100 dark:border-amber-800/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 dark:focus:ring-amber-600 focus:border-amber-500 dark:focus:border-amber-700 text-gray-700 dark:text-gray-200 placeholder-amber-300 dark:placeholder-amber-700 bg-transparent resize-none"
               aria-label="Chapter synopsis"
             />
