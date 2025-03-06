@@ -69,7 +69,7 @@ export default function ContextMenu({
           : 'text-foreground hover:bg-primary-subtle hover:text-primary-dark'
       }`}
     >
-      <div className="absolute inset-0 w-0 bg-gradient-to-r from-primary-subtle to-accent-subtle opacity-0 
+      <div className="absolute inset-0 w-0 bg-gradient-to-r from-primary-subtle to-transparent opacity-0 
         transition-all duration-300 group-hover:w-full group-hover:opacity-100"></div>
       <div className="flex items-center relative">
         <Icon className={`w-4 h-4 mr-3 transition-transform duration-300 group-hover:scale-110 ${

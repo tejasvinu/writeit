@@ -4,9 +4,10 @@ import { DocumentIcon, EllipsisVerticalIcon, FolderIcon, ClockIcon, CalendarIcon
 import { formatDistanceToNow } from 'date-fns'
 import { useState, useEffect } from 'react'
 import { useDocuments } from '@/context/DocumentContext'
-import ContextMenu from './ContextMenu'
 import { Document, DocumentMetadata, DocumentType, ViewMode } from '@/types/Document'
 import { MouseEvent } from 'react'
+import { createNewItem } from './index'
+import { useRouter } from 'next/navigation'
 
 interface LocalDocument {
   _id: string
@@ -26,6 +27,7 @@ interface DocumentViewsProps {
 }
 
 export function DocumentViews({ documents, onContextMenu, onFolderClick, onHover }: DocumentViewsProps) {
+  const router = useRouter()
   const { viewMode, currentPath, createDocument, setCurrentPath } = useDocuments()
   const [hoveredItem, setHoveredItem] = useState<string | null>(null)
 
@@ -44,6 +46,13 @@ export function DocumentViews({ documents, onContextMenu, onFolderClick, onHover
       onFolderClick(doc)
     } else {
       window.location.href = `/editor?id=${doc._id}`
+    }
+  }
+
+  const handleCreateNewDocument = async () => {
+    const newDoc = await createNewItem(false, currentPath, createDocument)
+    if (newDoc) {
+      router.push(`/editor?id=${newDoc._id}`)
     }
   }
 
@@ -113,7 +122,7 @@ export function DocumentViews({ documents, onContextMenu, onFolderClick, onHover
             {breadcrumbs.map((crumb, index) => (
               <li key={crumb.path}>
                 <div className="flex items-center">
-                  {index > 0 && <span className="mx-2 text-primary-light/50">/</span>}
+                  {index > 0 && <span className="mx-2 text-foreground-muted">/</span>}
                   <button
                     onClick={() => {
                       if (crumb.name === 'root') {
@@ -124,8 +133,8 @@ export function DocumentViews({ documents, onContextMenu, onFolderClick, onHover
                     }}
                     className={`text-sm font-medium transition-all duration-300 ${
                       crumb.isLast 
-                        ? 'text-primary-dark' 
-                        : 'text-primary hover:text-primary-dark relative group'
+                        ? 'text-primary' 
+                        : 'text-foreground-muted hover:text-primary relative group'
                     }`}
                   >
                     {crumb.name}
@@ -144,7 +153,7 @@ export function DocumentViews({ documents, onContextMenu, onFolderClick, onHover
       {/* Folders section */}
       {folders.length > 0 && (
         <div className="mb-8 relative z-10">
-          <h2 className="text-sm font-serif text-primary-dark mb-4 font-medium tracking-wide">Folders</h2>
+          <h2 className="text-sm font-medium text-primary mb-4 tracking-wide">Folders</h2>
           <div className="grid grid-cols-1 gap-3">
             {folders.map((folder) => (
               <div
@@ -164,11 +173,11 @@ export function DocumentViews({ documents, onContextMenu, onFolderClick, onHover
                   opacity-0 translate-y-2"
               >
                 <div className={`p-2 rounded-lg transition-colors duration-300 
-                  ${hoveredItem === folder._id ? 'bg-primary-subtle' : 'bg-accent-subtle'}`}>
+                  ${hoveredItem === folder._id ? 'bg-primary-subtle' : 'bg-accent-subtle/50'}`}>
                   <FolderIcon className="w-5 h-5 text-primary transition-colors duration-300" />
                 </div>
                 <div className="flex-1 ml-3">
-                  <h3 className="text-sm font-medium text-foreground">{folder.title}</h3>
+                  <h3 className="text-sm font-medium text-foreground group-hover:text-primary-dark transition-colors duration-300">{folder.title}</h3>
                   <p className="text-xs text-foreground-muted">
                     {formatDistanceToNow(new Date(folder.updatedAt), { addSuffix: true })}
                   </p>
@@ -186,7 +195,7 @@ export function DocumentViews({ documents, onContextMenu, onFolderClick, onHover
       {/* Documents section */}
       {docs.length > 0 ? (
         <div className="relative z-10">
-          <h2 className="text-sm font-serif text-primary-dark mb-4 font-medium tracking-wide">Documents</h2>
+          <h2 className="text-sm font-medium text-primary mb-4 tracking-wide">Documents</h2>
           <div className={
             viewMode === 'grid' 
               ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'
@@ -220,7 +229,7 @@ export function DocumentViews({ documents, onContextMenu, onFolderClick, onHover
           <p className="mt-1 text-sm text-foreground-muted">Get started by creating a new document.</p>
           <div className="mt-6">
             <button
-              onClick={() => createDocument({ title: 'Untitled', parentPath: currentPath })}
+              onClick={handleCreateNewDocument}
               className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white
                 bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary
                 transition-all duration-300 shadow-sm hover:shadow-md transform hover:scale-105
@@ -281,19 +290,21 @@ function DocumentItem({ document, viewMode, onSelect, onContextMenu, index, isHo
           transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 opacity-0 translate-y-2 group"
       >
         <div className={`flex items-center justify-center w-full h-32 rounded-lg mb-3 transition-colors duration-300
-          ${getTypeColor(document.metadata?.type)}`}>
+          ${isHovered ? 'bg-primary-subtle/70' : getTypeColor(document.metadata?.type)}`}>
           <DocumentIcon className="w-12 h-12 transition-transform duration-300 group-hover:scale-110" />
         </div>
-        <h3 className="font-medium font-serif truncate mb-2 text-foreground">{document.title}</h3>
-        <div className="flex flex-wrap gap-2 text-sm">
-          <span className="text-primary">{document.metadata?.wordCount || 0} words</span>
+        <h3 className="font-medium truncate mb-2 text-foreground group-hover:text-primary-dark transition-colors duration-300">
+          {document.title}
+        </h3>
+        <div className="flex flex-wrap gap-2 text-xs">
+          <span className="text-foreground-muted">{document.metadata?.wordCount || 0} words</span>
           {document.metadata?.status && (
             <span className={`px-2 py-0.5 rounded-full text-xs ${getStatusColor(document.metadata.status)}`}>
               {document.metadata.status}
             </span>
           )}
         </div>
-        <p className="text-xs text-primary mt-2">
+        <p className="text-xs text-foreground-muted mt-2">
           {formatDistanceToNow(new Date(document.updatedAt), { addSuffix: true })}
         </p>
       </div>
@@ -317,18 +328,18 @@ function DocumentItem({ document, viewMode, onSelect, onContextMenu, index, isHo
           <DocumentIcon className="w-5 h-5" />
         </div>
         <div className="min-w-0 flex-grow">
-          <h3 className="font-medium font-serif truncate text-foreground group-hover:text-primary-dark transition-colors duration-300">
+          <h3 className="font-medium truncate text-foreground group-hover:text-primary-dark transition-colors duration-300">
             {document.title}
           </h3>
-          <div className="flex items-center space-x-2 text-sm mt-0.5">
-            <span className="text-primary">
+          <div className="flex items-center space-x-2 text-xs mt-0.5 text-foreground-muted">
+            <span>
               {formatDistanceToNow(new Date(document.updatedAt), { addSuffix: true })}
             </span>
-            <span className="text-primary-light/30">•</span>
-            <span className="text-primary">{document.metadata?.wordCount || 0} words</span>
+            <span className="text-foreground-muted/30">•</span>
+            <span>{document.metadata?.wordCount || 0} words</span>
             {document.metadata?.status && (
               <>
-                <span className="text-primary-light/30">•</span>
+                <span className="text-foreground-muted/30">•</span>
                 <span className={`px-2 py-0.5 rounded-full text-xs ${getStatusColor(document.metadata.status)}`}>
                   {document.metadata.status}
                 </span>

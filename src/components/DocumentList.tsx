@@ -39,15 +39,15 @@ export default function DocumentList() {
 
   if (error) {
     return (
-      <div className="h-full flex flex-col items-center justify-center p-8 bg-error-light text-error">
-        <svg className="w-12 h-12 text-error mb-4 animate-pulse-subtle" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="h-full flex flex-col items-center justify-center p-8 bg-error-light dark:bg-error-light/20 text-error dark:text-red-400">
+        <svg className="w-12 h-12 text-error dark:text-red-400 mb-4 animate-pulse-subtle" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
         </svg>
         <p className="text-lg font-medium mb-2 animate-fade-in">Something went wrong</p>
         <p className="text-sm max-w-md text-center opacity-80">{error}</p>
         <button 
           onClick={() => window.location.reload()}
-          className="mt-4 px-4 py-2 bg-error text-white rounded-lg hover:bg-red-700 transition-all duration-300 shadow-sm hover:shadow-md transform hover:scale-105"
+          className="mt-4 px-4 py-2 bg-error dark:bg-red-700 text-white rounded-lg hover:bg-red-700 dark:hover:bg-red-600 transition-all duration-300 shadow-sm hover:shadow-md transform hover:scale-105"
         >
           Refresh Page
         </button>
@@ -56,16 +56,16 @@ export default function DocumentList() {
   }
 
   return (
-    <div className="h-full flex flex-col bg-gradient-to-b from-background-soft to-background">
+    <div className="h-full flex flex-col bg-gradient-to-b from-background-soft to-background dark:from-background-soft/50 dark:to-background">
       {/* Floating decoration elements with enhanced animations */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary-subtle rounded-full blur-3xl animate-float-slow"></div>
-        <div className="absolute top-1/3 -left-20 w-60 h-60 bg-accent-subtle rounded-full blur-3xl animate-float-delayed"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-32 h-32 bg-primary-subtle/50 rounded-full blur-2xl animate-float"></div>
+        <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary-subtle dark:bg-primary-subtle/40 rounded-full blur-3xl animate-float-slow"></div>
+        <div className="absolute top-1/3 -left-20 w-60 h-60 bg-accent-subtle dark:bg-accent-subtle/30 rounded-full blur-3xl animate-float-delayed"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-32 h-32 bg-primary-subtle/50 dark:bg-primary-subtle/20 rounded-full blur-2xl animate-float"></div>
       </div>
       
-      <div className="relative z-10 flex justify-between items-center p-6 border-b border-accent-subtle backdrop-blur-sm bg-surface-elevated/30">
-        <h1 className="text-2xl font-serif text-foreground relative group">
+      <div className="relative z-10 flex justify-between items-center p-6 border-b border-accent-subtle dark:border-accent-subtle/50 backdrop-blur-sm bg-surface-elevated/30 dark:bg-surface/30">
+        <h1 className="text-2xl font-serif text-foreground dark:text-gray-200 relative group">
           Your Documents
           <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-primary-light via-primary to-primary-light transition-all duration-300 group-hover:w-full"></span>
         </h1>
@@ -75,7 +75,7 @@ export default function DocumentList() {
             disabled={isCreating}
             onMouseEnter={() => setButtonHovered('folder')}
             onMouseLeave={() => setButtonHovered(null)}
-            className="px-4 py-2 text-sm border border-primary-light/30 bg-surface text-primary-dark hover:bg-primary-subtle rounded-lg transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-md inline-flex items-center group"
+            className="px-4 py-2 text-sm border border-primary-light/30 dark:border-primary-light/50 bg-surface dark:bg-surface-elevated text-primary-dark dark:text-primary-light hover:bg-primary-subtle dark:hover:bg-primary-subtle/20 rounded-lg transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-md inline-flex items-center group"
           >
             <FolderPlusIcon className="w-4 h-4 mr-1.5 transition-transform duration-300 group-hover:scale-110" />
             New Folder
@@ -103,8 +103,8 @@ export default function DocumentList() {
       <div className="flex-1 overflow-auto relative z-10">
         {isLoading ? (
           <div className="flex flex-col justify-center items-center h-full">
-            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-l-2 border-primary"></div>
-            <p className="mt-4 text-primary font-serif animate-pulse-subtle">Loading your literary works...</p>
+            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-l-2 border-primary dark:border-primary-light"></div>
+            <p className="mt-4 text-primary dark:text-primary-light font-serif animate-pulse-subtle">Loading your literary works...</p>
           </div>
         ) : (
           <div className="animate-fade-in">
@@ -114,8 +114,8 @@ export default function DocumentList() {
       </div>
       
       {/* Enhanced inspirational quote footer */}
-      <div className="p-4 border-t border-accent-subtle backdrop-blur-sm bg-surface-elevated/30 text-center text-sm text-primary-dark italic font-serif relative z-10 group">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary-subtle/0 via-primary-subtle to-primary-subtle/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+      <div className="p-4 border-t border-accent-subtle dark:border-accent-subtle/30 backdrop-blur-sm bg-surface-elevated/30 dark:bg-surface/30 text-center text-sm text-primary-dark dark:text-primary-light italic font-serif relative z-10 group">
+        <div className="absolute inset-0 bg-gradient-to-r from-primary-subtle/0 via-primary-subtle dark:via-primary-subtle/30 to-primary-subtle/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
         <p className="relative transition-transform duration-300 group-hover:scale-105">
           "The scariest moment is always just before you start." — Stephen King
         </p>

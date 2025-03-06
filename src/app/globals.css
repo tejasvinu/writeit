@@ -8,6 +8,12 @@
   }
 }
 
+@layer base {
+  input, textarea, select, [contenteditable] {
+    color: var(--foreground);
+  }
+}
+
 :root {
   --background: #ffffff;
   --background-soft: #fafafa;
@@ -36,34 +42,162 @@
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --background-soft: #121212;
-    --background-muted: #1a1a1a;
-    --foreground: #ededed;
-    --foreground-muted: #a3a3a3;
-    --primary: #f59e0b;
-    --primary-light: #fbbf24;
-    --primary-dark: #d97706;
-    --primary-subtle: rgba(245, 158, 11, 0.15);
-    --secondary: #1f1f1f;
-    --secondary-light: #2d2d2d;
-    --secondary-dark: #171717;
-    --accent: #f59e0b;
-    --accent-light: rgba(254, 243, 199, 0.1);
-    --accent-subtle: rgba(245, 158, 11, 0.2);
-    --success: #22c55e;
-    --success-light: rgba(187, 247, 208, 0.1);
-    --error: #ef4444;
-    --error-light: rgba(254, 202, 202, 0.1);
-    --surface: #171717;
-    --surface-light: #17171780;
-    --surface-elevated: #1f1f1f;
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
-  }
+/* Dark mode styling using the .dark class */
+.dark {
+  --background: #0a0a0e;
+  --background-soft: #121218;
+  --background-muted: #1a1a22;
+  --foreground: #f0f0f0;
+  --foreground-muted: #b8b8b8;
+  --primary: #f59e0b;
+  --primary-light: #fbbf24;
+  --primary-dark: #d97706;
+  --primary-subtle: rgba(245, 158, 11, 0.15);
+  --secondary: #2a2a33;
+  --secondary-light: #383844;
+  --secondary-dark: #232330;
+  --accent: #f59e0b;
+  --accent-light: rgba(254, 243, 199, 0.15);
+  --accent-subtle: rgba(245, 158, 11, 0.2);
+  --success: #22c55e;
+  --success-light: rgba(187, 247, 208, 0.15);
+  --error: #ef4444;
+  --error-light: rgba(254, 202, 202, 0.15);
+  --surface: #1c1c24;
+  --surface-light: rgba(28, 28, 36, 0.8);
+  --surface-elevated: #2c2c34;
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.7);
+}
+
+/* Dark mode specific overrides */
+.dark input, 
+.dark textarea, 
+.dark select, 
+.dark [contenteditable] {
+  background-color: #232333;
+  border-color: #383850;
+  color: var(--foreground);
+}
+
+/* Fix placeholder color in dark mode */
+.dark input::placeholder, 
+.dark textarea::placeholder {
+  color: rgba(184, 184, 184, 0.6);
+}
+
+.dark .paper-fold::before {
+  filter: brightness(0.8);
+}
+
+.dark .paper-fold::after {
+  filter: brightness(0.7);
+}
+
+/* Enhance visibility of borders in dark mode */
+.dark .border-secondary-dark {
+  border-color: #3a3a3a;
+}
+
+/* Improve button contrast in dark mode */
+.dark .bg-primary {
+  background-color: var(--primary);
+}
+
+.dark .bg-primary-dark {
+  background-color: var(--primary-dark);
+}
+
+/* Dark mode specific pattern */
+.dark .bg-pattern-dark {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23333333' fill-opacity='0.2'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Exciting dark mode backgrounds */
+.dark-gradient-bg {
+  background: linear-gradient(135deg, #1a1a24 0%, #0a0a12 100%);
+}
+
+.dark-gradient-surface {
+  background: linear-gradient(135deg, #232330 0%, #1c1c28 100%);
+}
+
+/* Dark mode animated border */
+.dark-animated-border {
+  position: relative;
+  border: none !important;
+  z-index: 0;
+}
+
+.dark-animated-border::before {
+  content: '';
+  position: absolute;
+  z-index: -2;
+  left: -10px;
+  top: -10px;
+  right: -10px;
+  bottom: -10px;
+  background: linear-gradient(45deg, var(--primary), var(--accent), var(--primary-dark), var(--primary));
+  background-size: 300% 300%;
+  animation: dark-border-shine 6s linear infinite;
+  border-radius: inherit;
+  filter: blur(14px);
+  opacity: 0.15;
+}
+
+.dark-animated-border::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--surface-elevated);
+  border-radius: inherit;
+}
+
+/* Card subtle hover effect */
+.dark-card-glow {
+  transition: all 0.2s ease;
+}
+
+.dark .dark-card-glow:hover {
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
+  transform: translateY(-2px);
+}
+
+/* Fix error message colors */
+.dark .bg-error-light {
+  background-color: rgba(239, 68, 68, 0.15);
+}
+
+.dark .text-error {
+  color: #ff6b6b;
+}
+
+.dark .border-error {
+  border-color: #ef4444;
+}
+
+/* Add subtle texture to backgrounds */
+.dark .dark-noise-bg {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 0.1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  background-blend-mode: overlay;
+}
+
+/* Social button hover effects */
+.social-btn-dark {
+  transition: all 0.2s ease;
+  background-color: #232330;
+  border-color: #383844;
+}
+
+.dark .social-btn-dark:hover:not(:disabled) {
+  background-color: #2a2a36;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 body {
@@ -172,6 +306,27 @@ body {
   }
 }
 
+@keyframes dark-border-shine {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes dark-particles-float {
+  0% {
+    background-position: 0 0, 15px 15px, 5px 5px;
+  }
+  100% {
+    background-position: 20px 20px, 35px 35px, 25px 25px;
+  }
+}
+
 .animate-float {
   animation: float 4s ease-in-out infinite;
 }
@@ -268,4 +423,46 @@ body {
 /* Floating elements with enhanced shadows */
 .float-enhanced {
   animation: floatWithShadow 6s ease-in-out infinite;
+}
+
+/* Add dark mode specific glow effects */
+.dark-glow {
+  box-shadow: 0 0 5px rgba(245, 158, 11, 0.3);
+}
+
+.dark .dark-glow {
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
+}
+
+/* Enhanced focus states for dark mode */
+.dark input:focus, 
+.dark textarea:focus, 
+.dark select:focus, 
+.dark [contenteditable]:focus {
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3);
+  border-color: var(--primary) !important;
+}
+
+/* Create cool floating particle effect for dark mode */
+.dark-particles {
+  position: relative;
+  overflow: hidden;
+}
+
+.dark .dark-particles::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle, rgba(245, 158, 11, 0.1) 1px, transparent 1px),
+    radial-gradient(circle, rgba(245, 158, 11, 0.1) 1px, transparent 1px),
+    radial-gradient(circle, rgba(245, 158, 11, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px, 30px 30px, 15px 15px;
+  background-position: 0 0, 15px 15px, 5px 5px;
+  animation: dark-particles-float 8s linear infinite;
+  opacity: 0.5;
+  z-index: -1;
 }

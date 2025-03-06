@@ -13,6 +13,8 @@ import {
 import { useState } from 'react'
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
+import { createNewItem } from './index'
+import { useRouter } from 'next/navigation'
 
 interface ExplorerItemProps {
   id: string
@@ -83,6 +85,7 @@ export function ExplorerItem({
 }
 
 export function ExplorerHeader() {
+  const router = useRouter()
   const {
     viewMode,
     setViewMode,
@@ -94,12 +97,11 @@ export function ExplorerHeader() {
     currentPath
   } = useDocuments()
 
-  const handleCreateDocument = (isFolder: boolean) => {
-    createDocument({
-      title: isFolder ? 'New Folder' : 'Untitled',
-      isFolder,
-      parentPath: currentPath
-    })
+  const handleCreateDocument = async (isFolder: boolean) => {
+    const newDoc = await createNewItem(isFolder, currentPath, createDocument)
+    if (newDoc && !isFolder) {
+      router.push(`/editor?id=${newDoc._id}`)
+    }
   }
 
   return (
@@ -139,7 +141,7 @@ export function ExplorerHeader() {
               border border-primary-light/30 hover:border-primary-light/50 rounded-lg 
               transition-all duration-300 relative overflow-hidden group hover:shadow-md"
           >
-            <div className="absolute inset-0 w-0 bg-gradient-to-r from-primary-subtle to-accent-subtle transition-all duration-300 group-hover:w-full"></div>
+            <div className="absolute inset-0 w-0 bg-gradient-to-r from-primary-subtle to-transparent transition-all duration-300 group-hover:w-full"></div>
             <FolderIcon className="w-5 h-5 mr-2 relative" />
             <span className="relative">New Folder</span>
           </button>

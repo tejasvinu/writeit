@@ -21,19 +21,19 @@ const MenuBar = ({
     return null
   }
 
-  const buttonBaseClass = "p-2 rounded-lg text-gray-600 hover:bg-amber-50 transition-colors duration-150 ease-in-out"
-  const activeClass = "bg-amber-50 text-amber-700 hover:bg-amber-100"
+  const buttonBaseClass = "p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-amber-50 dark:hover:bg-amber-900/30 transition-colors duration-150 ease-in-out"
+  const activeClass = "bg-amber-50 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-800/50"
 
   return (
     <div className="flex gap-1 p-2 items-center">
       <button
         onClick={onSave}
-        className="px-4 py-2 bg-amber-700 text-white rounded-lg hover:bg-amber-800 transition-all duration-150 ease-in-out font-medium shadow-sm hover:shadow transform hover:scale-105"
+        className="px-4 py-2 bg-amber-700 text-white dark:bg-amber-600 rounded-lg hover:bg-amber-800 dark:hover:bg-amber-700 transition-all duration-150 ease-in-out font-medium shadow-sm hover:shadow transform hover:scale-105"
         aria-label="Save document"
       >
         Save
       </button>
-      <div className="w-px bg-amber-100 mx-2 self-stretch" />
+      <div className="w-px bg-amber-100 dark:bg-amber-800/50 mx-2 self-stretch" />
       <button
         onClick={() => editor.chain().focus().toggleBold().run()}
         className={`${buttonBaseClass} ${editor.isActive('bold') ? activeClass : ''}`}
@@ -57,7 +57,7 @@ const MenuBar = ({
         </svg>
       </button>
 
-      <div className="w-px bg-amber-100 mx-2 self-stretch" />
+      <div className="w-px bg-amber-100 dark:bg-amber-800/50 mx-2 self-stretch" />
       
       <button
         onClick={() => editor.chain().focus().setParagraph().run()}
@@ -89,7 +89,7 @@ const MenuBar = ({
         H2
       </button>
       
-      <div className="w-px bg-amber-100 mx-2 self-stretch" />
+      <div className="w-px bg-amber-100 dark:bg-amber-800/50 mx-2 self-stretch" />
       
       <button
         onClick={() => editor.chain().focus().toggleBulletList().run()}
@@ -108,7 +108,7 @@ const MenuBar = ({
       {/* Full-screen toggle */}
       <button
         onClick={toggleFullscreen}
-        className={`${buttonBaseClass} text-amber-700`}
+        className={`${buttonBaseClass} text-amber-700 dark:text-amber-400`}
         title={isFullscreen ? "Exit full-screen (F11)" : "Full-screen (F11)"}
         aria-label={isFullscreen ? "Exit full-screen" : "Full-screen"}
         aria-pressed={isFullscreen}
@@ -124,7 +124,7 @@ const MenuBar = ({
         )}
       </button>
       
-      <span className="text-xs text-amber-600 italic animate-pulse ml-4">
+      <span className="text-xs text-amber-600 dark:text-amber-400 italic animate-pulse ml-4">
         {Math.random() > 0.7 ? "Writing with passion..." : "Creating your story..."}
       </span>
     </div>
@@ -224,7 +224,7 @@ export default function Editor({ content, onChange, className, onExit }: EditorP
     content: content || currentDocument?.content || '<p>Start writing here...</p>',
     editorProps: {
       attributes: {
-        class: `prose prose-lg xl:prose-xl mx-auto focus:outline-none min-h-[calc(100vh-16rem)] w-full max-w-none prose-headings:font-serif prose-h1:text-4xl prose-h1:text-amber-900 prose-h2:text-3xl prose-h2:text-amber-800 prose-p:text-gray-700 prose-p:leading-relaxed prose-a:text-amber-600 prose-a:no-underline hover:prose-a:underline prose-blockquote:border-l-4 prose-blockquote:border-amber-200 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-amber-700 prose-strong:text-gray-900 prose-em:text-gray-900 prose-ul:my-6 prose-li:my-2 prose-img:rounded-lg first-letter:text-5xl first-letter:font-serif first-letter:text-amber-800 first-letter:mr-1 first-letter:float-left ${isFullscreen ? 'fullscreen-editor' : ''} ${className || ''}`,
+        class: `prose prose-lg xl:prose-xl mx-auto focus:outline-none min-h-[calc(100vh-16rem)] w-full max-w-none prose-headings:font-serif prose-h1:text-4xl dark:prose-h1:text-amber-400 prose-h1:text-amber-900 prose-h2:text-3xl prose-h2:text-amber-800 dark:prose-h2:text-amber-500 prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-p:leading-relaxed prose-a:text-amber-600 dark:prose-a:text-amber-400 prose-a:no-underline hover:prose-a:underline prose-blockquote:border-l-4 prose-blockquote:border-amber-200 dark:prose-blockquote:border-amber-700 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-amber-700 dark:prose-blockquote:text-amber-400 prose-strong:text-gray-900 dark:prose-strong:text-gray-100 prose-em:text-gray-900 dark:prose-em:text-gray-100 prose-ul:my-6 prose-li:my-2 prose-img:rounded-lg first-letter:text-5xl first-letter:font-serif first-letter:text-amber-800 dark:first-letter:text-amber-400 first-letter:mr-1 first-letter:float-left dark:prose-invert ${isFullscreen ? 'fullscreen-editor' : ''} ${className || ''}`,
       },
     },
     onUpdate: ({ editor }) => {
@@ -358,10 +358,14 @@ export default function Editor({ content, onChange, className, onExit }: EditorP
 
   const getStatusColor = (status?: string) => {
     switch (status) {
-      case 'draft': return 'bg-amber-100 text-amber-800 border-amber-200'
-      case 'revision': return 'bg-amber-50 text-amber-700 border-amber-200'
-      case 'final': return 'bg-green-100 text-green-800 border-green-200'
-      default: return 'bg-amber-100 text-amber-800 border-amber-200'
+      case 'draft': 
+        return 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800/50'
+      case 'revision': 
+        return 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-500 dark:border-amber-800/40'
+      case 'final': 
+        return 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800/50'
+      default: 
+        return 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800/50'
     }
   }
 
@@ -377,13 +381,13 @@ export default function Editor({ content, onChange, className, onExit }: EditorP
   return (
     <div 
       ref={editorContainerRef} 
-      className={`h-full flex flex-col bg-white ${isFullscreen ? 'fixed inset-0 z-[100]' : ''} ${className || ''}`}
+      className={`h-full flex flex-col bg-white dark:bg-surface ${isFullscreen ? 'fixed inset-0 z-[100]' : ''} ${className || ''}`}
     >
       {/* Exit button - only visible in fullscreen mode */}
       {isFullscreen && (
         <button 
           onClick={exitEditor}
-          className="absolute top-4 right-4 z-50 bg-amber-700 text-white p-2 rounded-full hover:bg-amber-800 transition-colors"
+          className="absolute top-4 right-4 z-50 bg-amber-700 dark:bg-amber-600 text-white p-2 rounded-full hover:bg-amber-800 dark:hover:bg-amber-700 transition-colors"
           aria-label="Exit full-screen editor"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -395,31 +399,31 @@ export default function Editor({ content, onChange, className, onExit }: EditorP
       {/* Floating book papers animation - subtle background effect */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-5 z-0">
         <div className="animate-paper-float-slow absolute top-1/4 left-[10%]">
-          <div className="w-24 h-32 bg-amber-900 rounded-sm rotate-6"></div>
+          <div className="w-24 h-32 bg-amber-900 dark:bg-amber-700 rounded-sm rotate-6"></div>
         </div>
         <div className="animate-paper-float absolute bottom-1/3 right-[15%]">
-          <div className="w-16 h-24 bg-amber-700 rounded-sm -rotate-12"></div>
+          <div className="w-16 h-24 bg-amber-700 dark:bg-amber-600 rounded-sm -rotate-12"></div>
         </div>
       </div>
       
       {/* Header with title input */}
-      <div className={`p-4 border-b bg-gradient-to-r from-stone-50 to-white flex justify-between items-center relative z-10 ${isFullscreen ? 'shadow-md' : ''}`}>
+      <div className={`p-4 border-b bg-gradient-to-r from-stone-50 to-white dark:from-surface-light dark:to-surface flex justify-between items-center relative z-10 ${isFullscreen ? 'shadow-md' : ''}`}>
         <input
           type="text"
           value={localTitle}
           onChange={handleTitleChange}
-          className="text-2xl font-serif bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-opacity-50 rounded px-2 py-1 flex-grow text-amber-900"
+          className="text-2xl font-serif bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-opacity-50 rounded px-2 py-1 flex-grow text-amber-900 dark:text-amber-400"
           placeholder="Chapter Title"
           aria-label="Document title"
         />
         <div className="flex items-center space-x-4 text-sm">
           {saveError && (
-            <span className="text-red-500" role="alert">{saveError}</span>
+            <span className="text-red-500 dark:text-red-400" role="alert">{saveError}</span>
           )}
           {isSaving && (
-            <span className="text-amber-600 animate-pulse" aria-live="polite">Saving...</span>
+            <span className="text-amber-600 dark:text-amber-500 animate-pulse" aria-live="polite">Saving...</span>
           )}
-          <span className="bg-amber-50 px-3 py-1 rounded-full text-amber-700 border border-amber-100">
+          <span className="bg-amber-50 dark:bg-amber-900/30 px-3 py-1 rounded-full text-amber-700 dark:text-amber-400 border border-amber-100 dark:border-amber-800/50">
             {wordCount} words
           </span>
           <select 
@@ -438,7 +442,7 @@ export default function Editor({ content, onChange, className, onExit }: EditorP
                 saveDocument(updatedDoc)
               }
             }}
-            className={`border rounded-full px-3 py-1 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 ${getStatusColor(currentDocument?.metadata?.status)}`}
+            className={`border rounded-full px-3 py-1 focus:outline-none focus:ring-2 focus:ring-amber-500 dark:focus:ring-amber-600 focus:border-amber-500 dark:focus:border-amber-700 ${getStatusColor(currentDocument?.metadata?.status)}`}
             aria-label="Document status"
           >
             <option value="draft">Draft</option>
@@ -449,7 +453,7 @@ export default function Editor({ content, onChange, className, onExit }: EditorP
       </div>
       
       {/* Toolbar */}
-      <div className={`border-b bg-white/60 backdrop-blur-sm ${isFullscreen ? 'sticky top-0 z-20 shadow-sm' : ''}`}>
+      <div className={`border-b bg-white/60 dark:bg-surface-light/60 backdrop-blur-sm ${isFullscreen ? 'sticky top-0 z-20 shadow-sm' : ''}`}>
         <MenuBar
           editor={editor}
           onSave={handleSave}
@@ -459,7 +463,7 @@ export default function Editor({ content, onChange, className, onExit }: EditorP
       </div>
       
       {/* Editor content area */}
-      <div className={`flex-grow overflow-y-auto bg-white/80 relative z-10 ${isFullscreen ? 'px-4 py-10' : 'p-4'}`}>
+      <div className={`flex-grow overflow-y-auto bg-white/80 dark:bg-surface/90 relative z-10 ${isFullscreen ? 'px-4 py-10' : 'p-4'}`}>
         <div className={`mx-auto ${isFullscreen ? 'max-w-[90%]' : 'max-w-[95%]'} w-full`}>
           <EditorContent editor={editor} />
         </div>
@@ -467,14 +471,14 @@ export default function Editor({ content, onChange, className, onExit }: EditorP
       
       {/* Synopsis area - toggleable in fullscreen mode */}
       {(!isFullscreen || showSynopsis) && (
-        <div className={`border-t bg-gradient-to-b from-white to-stone-50 p-4 relative z-10 ${isFullscreen ? 'absolute bottom-0 left-0 right-0 border shadow-inner' : ''}`}>
+        <div className={`border-t bg-gradient-to-b from-white to-stone-50 dark:from-surface dark:to-surface-elevated p-4 relative z-10 ${isFullscreen ? 'absolute bottom-0 left-0 right-0 border shadow-inner' : ''}`}>
           <div className={`mx-auto ${isFullscreen ? 'max-w-[90%]' : 'max-w-[95%]'}`}>
             <div className="flex justify-between items-center mb-2">
-              <label className="block text-sm font-serif text-amber-800">Synopsis</label>
+              <label className="block text-sm font-serif text-amber-800 dark:text-amber-500">Synopsis</label>
               {isFullscreen && (
                 <button 
                   onClick={() => setShowSynopsis(false)} 
-                  className="text-amber-700 hover:text-amber-900"
+                  className="text-amber-700 hover:text-amber-900 dark:text-amber-500 dark:hover:text-amber-400"
                   aria-label="Hide synopsis"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -501,7 +505,7 @@ export default function Editor({ content, onChange, className, onExit }: EditorP
                   saveDocument(updatedDoc)
                 }
               }}
-              className="w-full h-24 p-3 border border-amber-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-gray-700 placeholder-amber-300 bg-white resize-none"
+              className="w-full h-24 p-3 border border-amber-100 dark:border-amber-900/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 dark:focus:ring-amber-600 focus:border-amber-500 dark:focus:border-amber-700 text-gray-700 dark:text-gray-300 placeholder-amber-300 dark:placeholder-amber-800/50 bg-white dark:bg-surface-elevated resize-none"
               aria-label="Chapter synopsis"
             />
           </div>
@@ -512,7 +516,7 @@ export default function Editor({ content, onChange, className, onExit }: EditorP
       {isFullscreen && !showSynopsis && (
         <button
           onClick={() => setShowSynopsis(true)}
-          className="fixed bottom-6 right-6 p-3 bg-amber-700 text-white rounded-full shadow-lg hover:bg-amber-800 transition-colors z-30"
+          className="fixed bottom-6 right-6 p-3 bg-amber-700 dark:bg-amber-600 text-white rounded-full shadow-lg hover:bg-amber-800 dark:hover:bg-amber-700 transition-colors z-30"
           aria-label="Show synopsis"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

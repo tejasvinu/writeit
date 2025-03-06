@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import { useState, useEffect } from 'react'
+import DarkModeToggle from './DarkModeToggle'
 
 export default function NavBar() {
   const pathname = usePathname()
@@ -28,7 +29,7 @@ export default function NavBar() {
   return (
     <nav className={`sticky top-0 z-50 transition-all duration-500 ${
       scrolled 
-        ? 'bg-surface-elevated/95 backdrop-blur-md shadow-md border-b border-accent-subtle' 
+        ? 'bg-surface-elevated/95 backdrop-blur-md shadow-md border-b border-accent-subtle dark:border-gray-700' 
         : 'bg-transparent'
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -69,8 +70,8 @@ export default function NavBar() {
                   href="/documents"
                   className={`inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ${
                     pathname === '/documents'
-                      ? 'text-primary-dark bg-primary-subtle shadow-inner border border-primary-light/20 transform hover:scale-105'
-                      : 'text-foreground-muted hover:text-primary-dark hover:bg-primary-subtle hover:shadow-sm hover:border hover:border-primary-light/20 hover:scale-105'
+                      ? 'text-primary-dark bg-primary-subtle dark:text-primary-light shadow-inner border border-primary-light/20 transform hover:scale-105'
+                      : 'text-foreground-muted hover:text-primary-dark dark:hover:text-primary-light hover:bg-primary-subtle hover:shadow-sm hover:border hover:border-primary-light/20 hover:scale-105'
                   }`}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 mr-1.5 transition-all duration-300 ${pathname === '/documents' ? 'text-primary' : 'text-foreground-muted group-hover:text-primary'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={pathname === '/documents' ? 2.5 : 2}>
@@ -81,10 +82,12 @@ export default function NavBar() {
               </div>
             )}
           </div>
-          <div className="flex items-center">
+          <div className="flex items-center space-x-4">
+            <DarkModeToggle />
+            
             {session ? (
               <div className="flex items-center space-x-4">
-                <div className="text-sm text-primary font-medium bg-gradient-to-r from-primary-subtle to-accent-subtle px-3 py-1.5 rounded-lg border border-primary-light/20 shadow-sm animate-pulse-subtle">
+                <div className="text-sm text-primary font-medium bg-gradient-to-r from-primary-subtle to-accent-subtle dark:from-primary-subtle/30 dark:to-accent-subtle/30 px-3 py-1.5 rounded-lg border border-primary-light/20 shadow-sm animate-pulse-subtle">
                   <span className="relative group">
                     {session.user?.name || session.user?.email}
                     <span className="absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-primary-light/50 to-transparent transform translate-y-1 opacity-0 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0"></span>
@@ -92,9 +95,9 @@ export default function NavBar() {
                 </div>
                 <button
                   onClick={() => signOut({ callbackUrl: '/' })}
-                  className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-foreground-muted hover:text-primary-dark hover:bg-primary-subtle transition-all duration-300 hover:shadow-sm hover:border hover:border-primary-light/20 relative overflow-hidden group"
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-foreground-muted hover:text-primary-dark dark:hover:text-primary-light hover:bg-primary-subtle transition-all duration-300 hover:shadow-sm hover:border hover:border-primary-light/20 relative overflow-hidden group"
                 >
-                  <div className="absolute inset-0 w-0 bg-gradient-to-r from-primary-subtle to-accent-subtle transition-all duration-300 group-hover:w-full"></div>
+                  <div className="absolute inset-0 w-0 bg-gradient-to-r from-primary-subtle to-accent-subtle dark:from-primary-subtle/30 dark:to-accent-subtle/30 transition-all duration-300 group-hover:w-full"></div>
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5 relative transition-all duration-300 group-hover:text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                   </svg>
@@ -105,9 +108,9 @@ export default function NavBar() {
               <div className="space-x-3">
                 <Link
                   href="/auth/signup"
-                  className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-primary-dark border border-primary-light/30 hover:border-primary-light/50 transition-all duration-300 relative overflow-hidden group hover:shadow-md"
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-primary-dark dark:text-primary-light border border-primary-light/30 hover:border-primary-light/50 transition-all duration-300 relative overflow-hidden group hover:shadow-md"
                 >
-                  <div className="absolute inset-0 w-0 bg-gradient-to-r from-primary-subtle to-accent-subtle transition-all duration-300 group-hover:w-full"></div>
+                  <div className="absolute inset-0 w-0 bg-gradient-to-r from-primary-subtle to-accent-subtle dark:from-primary-subtle/30 dark:to-accent-subtle/30 transition-all duration-300 group-hover:w-full"></div>
                   <span className="relative">Sign Up</span>
                 </Link>
                 <Link

@@ -14,6 +14,24 @@ interface ContextMenuState {
   id: string | null;
 }
 
+// Create a unified document creation function that can be shared across components
+export const createNewItem = async (
+  isFolder: boolean, 
+  currentPath: string, 
+  createDocument: (doc: any) => Promise<any>
+) => {
+  try {
+    return await createDocument({
+      title: isFolder ? 'New Folder' : 'Untitled',
+      isFolder,
+      parentPath: currentPath
+    })
+  } catch (error) {
+    console.error('Failed to create:', error)
+    return null
+  }
+}
+
 export default function FileExplorer() {
   const router = useRouter()
   const {
@@ -65,17 +83,12 @@ export default function FileExplorer() {
   }, [deleteDocument])
 
   const handleCreateNew = useCallback(async (isFolder: boolean) => {
-    try {
-      await createDocument({
-        title: isFolder ? 'New Folder' : 'Untitled',
-        isFolder,
-        parentPath: currentPath
-      })
-      setContextMenu(null)
-    } catch (error) {
-      console.error('Failed to create:', error)
+    const newDoc = await createNewItem(isFolder, currentPath, createDocument)
+    if (newDoc && !isFolder) {
+      router.push(`/editor?id=${newDoc._id}`)
     }
-  }, [createDocument, currentPath])
+    setContextMenu(null)
+  }, [createDocument, currentPath, router])
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -156,8 +169,8 @@ export default function FileExplorer() {
           </div>
 
           {/* Main content area */}
-          <div className="flex-1 overflow-y-auto bg-gradient-to-br from-background to-background-soft p-4">
-            <div className="grid gap-4 animate-fade-in">
+          <div className="flex-1 overflow-y-auto bg-gradient-to-br from-background to-background-soft">
+            <div className="animate-fade-in">
               <DocumentViews
                 documents={documents}
                 onContextMenu={handleContextMenu}
@@ -171,7 +184,7 @@ export default function FileExplorer() {
 
       {/* Context menu with enhanced animation */}
       {contextMenu && (
-        <div className="fixed inset-0 bg-foreground/5 backdrop-blur-sm z-50 animate-fade-in">
+        <div className="fixed inset-0 bg-surface-light backdrop-blur-sm z-50 animate-fade-in">
           <ContextMenu
             x={contextMenu.x}
             y={contextMenu.y}
