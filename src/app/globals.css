@@ -11,6 +11,7 @@
 @layer base {
   input, textarea, select, [contenteditable] {
     color: var(--foreground);
+    background-color: transparent;
   }
 }
 
@@ -76,9 +77,51 @@
 .dark textarea, 
 .dark select, 
 .dark [contenteditable] {
-  background-color: #232333;
+  background-color: transparent;
   border-color: #383850;
   color: var(--foreground);
+}
+
+/* Editor-specific styles to ensure consistent backgrounds */
+.ProseMirror {
+  background-color: transparent !important;
+  color: var(--foreground) !important;
+}
+
+/* Tiptap editor specific styles */
+.dark .ProseMirror {
+  background-color: transparent !important;
+  color: var(--foreground) !important;
+}
+
+.editor-content {
+  background-color: transparent;
+  color: var(--foreground);
+}
+
+/* Editor components specific styling */
+.editor-container textarea,
+.editor-container input,
+.editor-container [contenteditable] {
+  background-color: transparent !important;
+  color: var(--foreground) !important;
+}
+
+.dark .editor-container textarea,
+.dark .editor-container input,
+.dark .editor-container [contenteditable] {
+  background-color: transparent !important;
+  color: var(--foreground) !important;
+}
+
+/* Ensure synopsis textarea has the right background */
+.editor-container .synopsis-textarea {
+  background-color: transparent !important;
+}
+
+/* Fix text areas in the editor */
+.dark .prose-p {
+  background-color: transparent;
 }
 
 /* Fix placeholder color in dark mode */
@@ -441,6 +484,7 @@ body {
 .dark [contenteditable]:focus {
   box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3);
   border-color: var(--primary) !important;
+  background-color: rgba(10, 10, 14, 0.3) !important;
 }
 
 /* Create cool floating particle effect for dark mode */
@@ -465,4 +509,24 @@ body {
   animation: dark-particles-float 8s linear infinite;
   opacity: 0.5;
   z-index: -1;
+}
+
+/* Editor title input specific styling */
+.editor-title-input {
+  background-color: transparent !important;
+}
+
+/* Make sure all editor backgrounds are consistent */
+.editor-wrapper,
+.editor-content-area,
+.editor-toolbar,
+.editor-synopsis {
+  background-color: var(--background);
+}
+
+.dark .editor-wrapper,
+.dark .editor-content-area,
+.dark .editor-toolbar,
+.dark .editor-synopsis {
+  background-color: var(--background);
 }

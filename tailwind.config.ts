@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import plugin from 'tailwindcss/plugin';
 
 export default {
   content: [
@@ -140,7 +141,7 @@ export default {
   },
   plugins: [
     require('@tailwindcss/typography'),
-    function({ addBase, theme }) {
+    plugin(({ addBase, theme }: { addBase: Function; theme: Function }) => {
       addBase({
         'input, select, textarea': {
           backgroundColor: theme('colors.input.background'),
@@ -155,8 +156,8 @@ export default {
           }
         },
       });
-    },
-    function({ addComponents }) {
+    }),
+    plugin(({ addComponents }: { addComponents: Function }) => {
       addComponents({
         '.dark-elevated': {
           '@media (prefers-color-scheme: dark)': {
@@ -165,6 +166,6 @@ export default {
           }
         }
       })
-    }
+    })
   ],
 } satisfies Config;
