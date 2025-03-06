@@ -11,6 +11,7 @@ export default function NavBar() {
   const { data: session } = useSession()
   const [scrolled, setScrolled] = useState(false)
   const [hovered, setHovered] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   
   useEffect(() => {
     const handleScroll = () => {
@@ -20,18 +21,24 @@ export default function NavBar() {
       }
     }
     
-    window.addEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', handleScroll, { passive: true })
     return () => {
       window.removeEventListener('scroll', handleScroll)
     }
   }, [scrolled])
+
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setMobileMenuOpen(false)
+  }, [pathname])
 
   return (
     <nav className={`sticky top-0 z-50 transition-all duration-500 ${
       scrolled 
         ? 'bg-surface-elevated/95 backdrop-blur-md shadow-md border-b border-accent-subtle dark:border-gray-700' 
         : 'bg-transparent'
-    }`}>
+    }`}
+    aria-label="Main navigation">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
@@ -40,6 +47,7 @@ export default function NavBar() {
               className="flex items-center px-2 text-xl font-serif text-foreground group transition-all duration-300 hover:scale-105"
               onMouseEnter={() => setHovered(true)}
               onMouseLeave={() => setHovered(false)}
+              aria-label="WriteIt Home"
             >
               <div className="relative">
                 <svg 
@@ -48,6 +56,7 @@ export default function NavBar() {
                   fill="none" 
                   viewBox="0 0 24 24" 
                   stroke="currentColor"
+                  aria-hidden="true"
                 >
                   <path 
                     strokeLinecap="round" 
@@ -65,7 +74,7 @@ export default function NavBar() {
               </span>
             </Link>
             {session && (
-              <div className="ml-6 flex space-x-4">
+              <div className="hidden md:flex ml-6 space-x-4">
                 <Link
                   href="/documents"
                   className={`inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ${
@@ -73,16 +82,54 @@ export default function NavBar() {
                       ? 'text-primary-dark bg-primary-subtle dark:text-primary-light shadow-inner border border-primary-light/20 transform hover:scale-105'
                       : 'text-foreground-muted hover:text-primary-dark dark:hover:text-primary-light hover:bg-primary-subtle hover:shadow-sm hover:border hover:border-primary-light/20 hover:scale-105'
                   }`}
+                  aria-current={pathname === '/documents' ? 'page' : undefined}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 mr-1.5 transition-all duration-300 ${pathname === '/documents' ? 'text-primary' : 'text-foreground-muted group-hover:text-primary'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={pathname === '/documents' ? 2.5 : 2}>
+                  <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 mr-1.5 transition-all duration-300 ${pathname === '/documents' ? 'text-primary' : 'text-foreground-muted group-hover:text-primary'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={pathname === '/documents' ? 2.5 : 2} aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                   </svg>
-                  Documents
+                  <span>Documents</span>
+                </Link>
+                <Link
+                  href="/editor"
+                  className={`inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ${
+                    pathname === '/editor'
+                      ? 'text-primary-dark bg-primary-subtle dark:text-primary-light shadow-inner border border-primary-light/20 transform hover:scale-105'
+                      : 'text-foreground-muted hover:text-primary-dark dark:hover:text-primary-light hover:bg-primary-subtle hover:shadow-sm hover:border hover:border-primary-light/20 hover:scale-105'
+                  }`}
+                  aria-current={pathname === '/editor' ? 'page' : undefined}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 mr-1.5 transition-all duration-300 ${pathname === '/editor' ? 'text-primary' : 'text-foreground-muted group-hover:text-primary'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={pathname === '/editor' ? 2.5 : 2} aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  <span>Editor</span>
                 </Link>
               </div>
             )}
           </div>
-          <div className="flex items-center space-x-4">
+          
+          {/* Mobile menu button */}
+          <div className="md:hidden flex items-center">
+            <button
+              type="button"
+              className="inline-flex items-center justify-center p-2 rounded-md text-foreground-muted hover:text-primary-dark hover:bg-primary-subtle focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary transition-all duration-300"
+              aria-controls="mobile-menu"
+              aria-expanded={mobileMenuOpen}
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              <span className="sr-only">{mobileMenuOpen ? 'Close main menu' : 'Open main menu'}</span>
+              {mobileMenuOpen ? (
+                <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
+          </div>
+          
+          <div className="hidden md:flex items-center space-x-4">
             <DarkModeToggle />
             
             {session ? (
@@ -96,9 +143,10 @@ export default function NavBar() {
                 <button
                   onClick={() => signOut({ callbackUrl: '/' })}
                   className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-foreground-muted hover:text-primary-dark dark:hover:text-primary-light hover:bg-primary-subtle transition-all duration-300 hover:shadow-sm hover:border hover:border-primary-light/20 relative overflow-hidden group"
+                  aria-label="Sign out"
                 >
                   <div className="absolute inset-0 w-0 bg-gradient-to-r from-primary-subtle to-accent-subtle dark:from-primary-subtle/30 dark:to-accent-subtle/30 transition-all duration-300 group-hover:w-full"></div>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5 relative transition-all duration-300 group-hover:text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5 relative transition-all duration-300 group-hover:text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                   </svg>
                   <span className="relative">Sign Out</span>
@@ -118,13 +166,85 @@ export default function NavBar() {
                   className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-white bg-gradient-to-r from-primary to-primary-dark hover:from-primary-dark hover:to-primary transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 relative overflow-hidden group"
                 >
                   <div className="absolute inset-0 w-3/4 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-500 group-hover:translate-x-full"></div>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5 relative animate-pulse-subtle" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5 relative animate-pulse-subtle" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                   </svg>
                   <span className="relative">Sign In</span>
                 </Link>
               </div>
             )}
+          </div>
+        </div>
+      </div>
+      
+      {/* Mobile menu, show/hide based on menu state */}
+      <div className={`md:hidden transition-all duration-300 ease-in-out ${mobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`} id="mobile-menu">
+        <div className="px-2 pt-2 pb-3 space-y-1 border-t border-accent-subtle dark:border-gray-700">
+          {session && (
+            <>
+              <Link
+                href="/documents"
+                className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
+                  pathname === '/documents'
+                    ? 'bg-primary-subtle text-primary-dark dark:text-primary-light dark:bg-gray-800'
+                    : 'hover:bg-primary-subtle/50 hover:text-primary-dark dark:hover:text-primary-light'
+                }`}
+                aria-current={pathname === '/documents' ? 'page' : undefined}
+              >
+                Documents
+              </Link>
+              <Link
+                href="/editor"
+                className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
+                  pathname === '/editor'
+                    ? 'bg-primary-subtle text-primary-dark dark:text-primary-light dark:bg-gray-800'
+                    : 'hover:bg-primary-subtle/50 hover:text-primary-dark dark:hover:text-primary-light'
+                }`}
+                aria-current={pathname === '/editor' ? 'page' : undefined}
+              >
+                Editor
+              </Link>
+            </>
+          )}
+          
+          <div className="pt-4 pb-2 border-t border-accent-subtle/30 dark:border-gray-700/30">
+            <div className="flex items-center px-5">
+              <div className="flex-shrink-0">
+                <DarkModeToggle />
+              </div>
+              {session && (
+                <div className="ml-3">
+                  <div className="text-sm font-medium text-primary dark:text-primary-light">
+                    {session.user?.name || session.user?.email}
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="mt-3 px-2 space-y-1">
+              {session ? (
+                <button
+                  onClick={() => signOut({ callbackUrl: '/' })}
+                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-foreground-muted hover:text-primary-dark hover:bg-primary-subtle dark:hover:text-primary-light dark:hover:bg-gray-800 transition-colors duration-200"
+                >
+                  Sign Out
+                </button>
+              ) : (
+                <div className="flex flex-col space-y-2">
+                  <Link
+                    href="/auth/signup"
+                    className="block px-3 py-2 rounded-md text-base font-medium text-primary-dark dark:text-primary-light hover:bg-primary-subtle dark:hover:bg-gray-800 transition-colors duration-200"
+                  >
+                    Sign Up
+                  </Link>
+                  <Link
+                    href="/auth/signin"
+                    className="block px-3 py-2 rounded-md text-base font-medium text-white bg-primary hover:bg-primary-dark transition-colors duration-200"
+                  >
+                    Sign In
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

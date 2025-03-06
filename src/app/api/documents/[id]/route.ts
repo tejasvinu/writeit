@@ -3,28 +3,32 @@ import { Document } from "@/models/Document"
 import { getServerSession } from "next-auth"
 import { NextResponse } from "next/server"
 import { authOptions } from "../../auth/[...nextauth]/options"
-import mongoose from "mongoose"
 import { isValidObjectId } from 'mongoose'
+import { IDocument } from "@/models/Document"
 
-// Get a single document
-export async function GET(request: Request, context: any) {
+/**
+ * Get a single document and its ancestors
+ */
+export async function GET(request: Request, context: { params: { id: string } }) {
   const { params } = context
   
   try {
+    // Authentication check
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Await params before using its properties
-    const id = (await params).id
+    const { id } = params
     
+    // Validate document ID format
     if (!isValidObjectId(id)) {
-      return NextResponse.json({ error: 'Invalid document ID' }, { status: 400 })
+      return NextResponse.json({ error: 'Invalid document ID format' }, { status: 400 })
     }
 
     await connectToDatabase()
 
+    // Find document with projection to exclude large fields if not needed
     const document = await Document.findOne({
       _id: id,
       owner: session.user.id,
@@ -34,7 +38,7 @@ export async function GET(request: Request, context: any) {
       return NextResponse.json({ error: "Document not found" }, { status: 404 })
     }
 
-    // Get ancestors using the new path-based method
+    // Get ancestors using the path-based method
     const ancestors = await Document.getAncestors(session.user.id, document.path)
 
     return NextResponse.json({ document, ancestors })
@@ -47,28 +51,38 @@ export async function GET(request: Request, context: any) {
   }
 }
 
-// Update a document
-export async function PATCH(request: Request, context: any) {
+/**
+ * Update a document's properties and/or move it to a new location
+ */
+export async function PATCH(request: Request, context: { params: { id: string } }) {
   const { params } = context
   
   try {
+    // Authentication check
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Await params before using its properties
-    const id = (await params).id
+    const { id } = params
     
+    // Validate document ID format
     if (!isValidObjectId(id)) {
-      return NextResponse.json({ error: 'Invalid document ID' }, { status: 400 })
+      return NextResponse.json({ error: 'Invalid document ID format' }, { status: 400 })
     }
 
+    // Parse request body
     const body = await request.json()
     const { title, content, metadata, updatedAt, newParentPath } = body
 
+    // Validate required fields
+    if (title !== undefined && (typeof title !== 'string' || title.trim().length === 0)) {
+      return NextResponse.json({ error: 'Title cannot be empty' }, { status: 400 })
+    }
+
     await connectToDatabase()
 
+    // Fetch the document
     const document = await Document.findOne({ _id: id, owner: session.user.id })
     if (!document) {
       return NextResponse.json({ error: "Document not found" }, { status: 404 })
@@ -93,10 +107,23 @@ export async function PATCH(request: Request, context: any) {
 
     // Handle document move if newParentPath is provided
     if (newParentPath !== undefined) {
+      // Validate that the new parent path exists (except for root path)
+      if (newParentPath !== '/root') {
+        const parentExists = await Document.exists({
+          owner: session.user.id,
+          path: newParentPath,
+          isFolder: true
+        })
+        
+        if (!parentExists) {
+          return NextResponse.json({ error: 'Parent folder not found' }, { status: 400 })
+        }
+      }
+      
       await Document.moveDocument(session.user.id, id, newParentPath)
     }
 
-    // Build flat update object
+    // Build update object
     const updateData: Record<string, any> = {}
     
     if (title !== undefined) {
@@ -114,9 +141,22 @@ export async function PATCH(request: Request, context: any) {
     
     if (content !== undefined) {
       updateData.content = content
+      
+      // Calculate word count
+      updateData['metadata.wordCount'] = content
+        .replace(/<[^>]*>/g, '') // Remove HTML tags
+        .trim()
+        .split(/\s+/)
+        .filter((word: string) => word.length > 0)
+        .length
     }
 
     if (metadata) {
+      // Validate metadata structure
+      if (typeof metadata !== 'object') {
+        return NextResponse.json({ error: 'Metadata must be an object' }, { status: 400 })
+      }
+      
       Object.entries(metadata).forEach(([key, value]) => {
         updateData[`metadata.${key}`] = value
       })
@@ -124,15 +164,6 @@ export async function PATCH(request: Request, context: any) {
 
     if (updatedAt) {
       updateData.updatedAt = updatedAt
-    }
-
-    if (content) {
-      updateData['metadata.wordCount'] = content
-        .replace(/<[^>]*>/g, '')
-        .trim()
-        .split(/\s+/)
-        .filter((word: string) => word.length > 0)
-        .length
     }
 
     // Use $set to update only specified fields
@@ -145,6 +176,11 @@ export async function PATCH(request: Request, context: any) {
           runValidators: true,
         }
       )
+      
+      if (!updatedDoc) {
+        return NextResponse.json({ error: "Failed to update document" }, { status: 500 })
+      }
+      
       return NextResponse.json(updatedDoc)
     } catch (error: any) {
       // Handle unique constraint violation
@@ -165,21 +201,24 @@ export async function PATCH(request: Request, context: any) {
   }
 }
 
-// Delete a document and its children (if it's a folder)
-export async function DELETE(request: Request, context: any) {
+/**
+ * Delete a document and its children recursively using path-based matching
+ */
+export async function DELETE(request: Request, context: { params: { id: string } }) {
   const { params } = context
   
   try {
+    // Authentication check
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Await params before using its properties
-    const id = (await params).id
+    const { id } = params
     
+    // Validate document ID format
     if (!isValidObjectId(id)) {
-      return NextResponse.json({ error: 'Invalid document ID' }, { status: 400 })
+      return NextResponse.json({ error: 'Invalid document ID format' }, { status: 400 })
     }
 
     await connectToDatabase()
