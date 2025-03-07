@@ -78,6 +78,10 @@ export default {
         'book-open-right': 'bookOpenRight 1s ease-out forwards',
         'fade-in-delayed': 'fadeInDelayed 1s ease-out forwards',
         'paper-float-reverse': 'paperFloatReverse 5s ease-in-out infinite',
+        'path-flow': 'pathFlow 15s linear infinite',
+        'letter-fade': 'letterFadeIn 0.5s ease-out forwards',
+        'glow': 'glow 3s ease-in-out infinite',
+        'float-slow-custom': 'float 8s ease-in-out infinite',
       },
       keyframes: {
         blink: {
@@ -126,6 +130,18 @@ export default {
           '0%, 100%': { transform: 'translateY(0) rotate(3deg)' },
           '50%': { transform: 'translateY(-8px) rotate(6deg)' },
         },
+        pathFlow: {
+          '0%': { strokeDashoffset: '0' },
+          '100%': { strokeDashoffset: '1000' },
+        },
+        letterFadeIn: {
+          '0%': { opacity: '0', transform: 'translateY(40px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        glow: {
+          '0%, 100%': { filter: 'drop-shadow(0 0 5px rgba(245, 158, 11, 0.3))' },
+          '50%': { filter: 'drop-shadow(0 0 15px rgba(245, 158, 11, 0.6))' },
+        }
       },
       rotate: {
         'y-180': 'rotateY(180deg)',
@@ -166,6 +182,19 @@ export default {
           }
         }
       })
-    })
+    }),
+    plugin(({ addUtilities }: { addUtilities: Function }) => {
+      addUtilities({
+        '.perspective-1000': {
+          perspective: '1000px',
+        },
+        '.backface-hidden': {
+          backfaceVisibility: 'hidden',
+        },
+        '.transform-style-3d': {
+          transformStyle: 'preserve-3d',
+        },
+      })
+    }),
   ],
 } satisfies Config;

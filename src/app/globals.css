@@ -370,6 +370,84 @@ body {
   }
 }
 
+@keyframes pathFlow {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: 1000;
+  }
+}
+
+@keyframes letterFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.3));
+  }
+  50% {
+    filter: drop-shadow(0 0 15px rgba(245, 158, 11, 0.6));
+  }
+}
+
+@keyframes inkDrop {
+  0% {
+    transform: scale(0);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes quillWrite {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  25% {
+    transform: translate(15px, 5px) rotate(2deg);
+  }
+  50% {
+    transform: translate(30px, 0) rotate(0deg);
+  }
+  75% {
+    transform: translate(45px, -5px) rotate(-2deg);
+  }
+  100% {
+    transform: translate(60px, 0) rotate(0deg);
+  }
+}
+
+@keyframes inkSpread {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(20);
+    opacity: 0;
+  }
+}
+
+@keyframes cursorBlink {
+  0%, 100% { 
+    opacity: 1; 
+  }
+  50% { 
+    opacity: 0; 
+  }
+}
+
 .animate-float {
   animation: float 4s ease-in-out infinite;
 }
@@ -390,6 +468,22 @@ body {
 
 .animate-float-enhanced {
   animation: floatWithShadow 4s ease-in-out infinite;
+}
+
+.animate-path-flow {
+  animation: pathFlow 15s linear infinite;
+}
+
+.animate-letter-fade {
+  animation: letterFadeIn 0.5s ease-out forwards;
+}
+
+.animate-glow {
+  animation: glow 3s ease-in-out infinite;
+}
+
+.animate-quill-write {
+  animation: quillWrite 2s ease-in-out forwards;
 }
 
 /* Add first-letter styling support */
@@ -529,4 +623,147 @@ body {
 .dark .editor-toolbar,
 .dark .editor-synopsis {
   background-color: var(--background);
+}
+
+/* Paper texture backgrounds */
+.bg-paper-texture {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.15'/%3E%3C/svg%3E");
+}
+
+.bg-paper-texture-dark {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.1'/%3E%3C/svg%3E");
+}
+
+/* Enhanced animated ink effects */
+.ink-drop {
+  position: relative;
+}
+
+.ink-drop::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(180, 83, 9, 0.4) 0%, transparent 70%);
+  transform: scale(0);
+  opacity: 0;
+  animation: inkDrop 3s ease-out forwards;
+}
+
+/* Vintage paper background texture */
+.vintage-paper {
+  background-color: #f8f4e9;
+  background-image: 
+    linear-gradient(rgba(227, 217, 199, 0.1) 2px, transparent 2px),
+    linear-gradient(90deg, rgba(227, 217, 199, 0.1) 2px, transparent 2px);
+  background-size: 30px 30px;
+}
+
+.dark .vintage-paper {
+  background-color: #1c1c24;
+  background-image: 
+    linear-gradient(rgba(227, 217, 199, 0.05) 2px, transparent 2px),
+    linear-gradient(90deg, rgba(227, 217, 199, 0.05) 2px, transparent 2px);
+  background-size: 30px 30px;
+}
+
+/* Writing-themed drop animation */
+.ink-spot {
+  position: relative;
+  overflow: hidden;
+}
+
+.ink-spot::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 3px;
+  height: 3px;
+  background: rgba(180, 83, 9, 0.7);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: inkSpread 2s ease-out;
+}
+
+/* Paper fold and page turn effects */
+.page-container {
+  perspective: 1000px;
+}
+
+.page {
+  transition: transform 0.5s;
+  transform-origin: left center;
+  transform-style: preserve-3d;
+}
+
+.page-turn {
+  transform: rotateY(-180deg);
+}
+
+/* Manuscript line background */
+.manuscript-bg {
+  background-image: linear-gradient(transparent 27px, #e1e1e1 1px);
+  background-size: 100% 28px;
+  padding: 0;
+}
+
+.dark .manuscript-bg {
+  background-image: linear-gradient(transparent 27px, #333333 1px);
+}
+
+/* Writing cursor animation */
+.writing-cursor::after {
+  content: '|';
+  animation: cursorBlink 1s step-end infinite;
+  margin-left: 2px;
+}
+
+/* Enhanced paper texture backgrounds */
+.paper-texture {
+  background-color: #fffdf8;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.15' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.1'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+}
+
+.dark .paper-texture {
+  background-color: #1a1a22;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.15' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.06'/%3E%3C/svg%3E");
+}
+
+/* Flip card animation for feature cards */
+.flip-card {
+  perspective: 1000px;
+}
+
+.flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.8s;
+  transform-style: preserve-3d;
+}
+
+.is-flipped .flip-card-inner {
+  transform: rotateY(180deg);
+}
+
+.flip-card-front, .flip-card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+}
+
+.flip-card-back {
+  transform: rotateY(180deg);
+}
+
+/* Sepia effect for a vintage writing feel */
+.sepia-effect {
+  filter: sepia(20%) brightness(105%);
+}
+
+.dark .sepia-effect {
+  filter: sepia(30%) brightness(80%) hue-rotate(5deg);
 }
