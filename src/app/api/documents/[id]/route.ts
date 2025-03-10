@@ -1,17 +1,22 @@
 import { connectToDatabase } from "@/lib/mongodb"
 import { Document } from "@/models/Document"
 import { getServerSession } from "next-auth"
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { authOptions } from "../../auth/[...nextauth]/options"
 import { isValidObjectId } from 'mongoose'
 import { IDocument } from "@/models/Document"
 
+interface RouteContext {
+  params: { id: string }
+}
+
 /**
  * Get a single document and its ancestors
  */
-export async function GET(request: Request, context: { params: { id: string } }) {
-  const { params } = context
-  
+export async function GET(
+  request: NextRequest,
+  { params }: RouteContext
+) {
   try {
     // Authentication check
     const session = await getServerSession(authOptions)
@@ -54,9 +59,10 @@ export async function GET(request: Request, context: { params: { id: string } })
 /**
  * Update a document's properties and/or move it to a new location
  */
-export async function PATCH(request: Request, context: { params: { id: string } }) {
-  const { params } = context
-  
+export async function PATCH(
+  request: NextRequest,
+  { params }: RouteContext
+) {
   try {
     // Authentication check
     const session = await getServerSession(authOptions)
@@ -204,9 +210,10 @@ export async function PATCH(request: Request, context: { params: { id: string } 
 /**
  * Delete a document and its children recursively using path-based matching
  */
-export async function DELETE(request: Request, context: { params: { id: string } }) {
-  const { params } = context
-  
+export async function DELETE(
+  request: NextRequest,
+  { params }: RouteContext
+) {
   try {
     // Authentication check
     const session = await getServerSession(authOptions)
