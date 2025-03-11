@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import { useState, useEffect } from 'react'
 import DarkModeToggle from './DarkModeToggle'
@@ -9,6 +9,7 @@ import DarkModeToggle from './DarkModeToggle'
 export default function NavBar() {
   const pathname = usePathname()
   const { data: session } = useSession()
+  const router = useRouter()
   const [scrolled, setScrolled] = useState(false)
   const [hovered, setHovered] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -31,6 +32,14 @@ export default function NavBar() {
   useEffect(() => {
     setMobileMenuOpen(false)
   }, [pathname])
+
+  const handleProtectedNavigation = (path: string) => {
+    if (!session) {
+      router.push(`/auth/signin?callbackUrl=${encodeURIComponent(path)}`)
+      return
+    }
+    router.push(path)
+  }
 
   return (
     <nav className={`sticky top-0 z-50 transition-all duration-500 ${
@@ -75,8 +84,8 @@ export default function NavBar() {
             </Link>
             {session && (
               <div className="hidden md:flex ml-6 space-x-4">
-                <Link
-                  href="/documents"
+                <button
+                  onClick={() => handleProtectedNavigation('/documents')}
                   className={`inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ${
                     pathname === '/documents'
                       ? 'text-primary-dark bg-primary-subtle dark:text-primary-light shadow-inner border border-primary-light/20 transform hover:scale-105'
@@ -88,9 +97,9 @@ export default function NavBar() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                   </svg>
                   <span>Documents</span>
-                </Link>
-                <Link
-                  href="/editor"
+                </button>
+                <button
+                  onClick={() => handleProtectedNavigation('/editor')}
                   className={`inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ${
                     pathname === '/editor'
                       ? 'text-primary-dark bg-primary-subtle dark:text-primary-light shadow-inner border border-primary-light/20 transform hover:scale-105'
@@ -102,7 +111,7 @@ export default function NavBar() {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
                   <span>Editor</span>
-                </Link>
+                </button>
               </div>
             )}
           </div>
@@ -182,9 +191,9 @@ export default function NavBar() {
         <div className="px-2 pt-2 pb-3 space-y-1 border-t border-accent-subtle dark:border-gray-700">
           {session && (
             <>
-              <Link
-                href="/documents"
-                className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
+              <button
+                onClick={() => handleProtectedNavigation('/documents')}
+                className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
                   pathname === '/documents'
                     ? 'bg-primary-subtle text-primary-dark dark:text-primary-light dark:bg-gray-800'
                     : 'hover:bg-primary-subtle/50 hover:text-primary-dark dark:hover:text-primary-light'
@@ -192,10 +201,10 @@ export default function NavBar() {
                 aria-current={pathname === '/documents' ? 'page' : undefined}
               >
                 Documents
-              </Link>
-              <Link
-                href="/editor"
-                className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
+              </button>
+              <button
+                onClick={() => handleProtectedNavigation('/editor')}
+                className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
                   pathname === '/editor'
                     ? 'bg-primary-subtle text-primary-dark dark:text-primary-light dark:bg-gray-800'
                     : 'hover:bg-primary-subtle/50 hover:text-primary-dark dark:hover:text-primary-light'
@@ -203,7 +212,7 @@ export default function NavBar() {
                 aria-current={pathname === '/editor' ? 'page' : undefined}
               >
                 Editor
-              </Link>
+              </button>
             </>
           )}
           
