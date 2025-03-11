@@ -14,6 +14,15 @@ interface TextStatistics {
   }
 }
 
+interface CreativeEvaluation {
+  tone: string
+  strengths: string[]
+  suggestions: string[]
+  pacing: string
+  description: string
+  dialogue: string | null
+}
+
 interface StatisticsSidebarProps {
   content: string
   isVisible: boolean
@@ -33,6 +42,9 @@ export default function StatisticsSidebar({ content, isVisible, onClose }: Stati
     }
   })
   const [animationComplete, setAnimationComplete] = useState(false)
+  const [aiAnalysis, setAiAnalysis] = useState<CreativeEvaluation | null>(null)
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [analyzeError, setAnalyzeError] = useState<string | null>(null)
 
   // Calculate statistics whenever content changes or sidebar becomes visible
   useEffect(() => {
@@ -91,6 +103,69 @@ export default function StatisticsSidebar({ content, isVisible, onClose }: Stati
       setAnimationComplete(false)
     }
   }, [content, isVisible])
+
+  // Request AI analysis when sidebar becomes visible and content is substantial
+  useEffect(() => {
+    async function analyzeContent() {
+      if (isVisible && content.trim().length > 100 && stats.words > 50 && !aiAnalysis && !isAnalyzing) {
+        setIsAnalyzing(true)
+        setAnalyzeError(null);
+        try {
+          const prompt = `As a creative writing assistant, analyze the following text and provide feedback on:
+1. Overall tone and style
+2. Three strengths of the writing
+3. Three constructive suggestions for improvement
+4. Assessment of pacing (too fast, balanced, too slow)
+5. Quality of descriptive language
+6. Quality of dialogue (if present, otherwise respond with "null")
+
+Format your response as a valid JSON object with these keys: tone, strengths, suggestions, pacing, description, dialogue.
+Keep your analysis concise - limit each value to 1-2 sentences maximum.
+
+Text to analyze:
+${content.substring(0, 2000)}${content.length > 2000 ? '...' : ''}`;
+
+          const response = await fetch('/api/ai/chat', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              messages: [
+                {
+                  role: 'user',
+                  content: prompt
+                }
+              ]
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to get AI analysis');
+          }
+
+          const data = await response.json();
+          const resultText = data.content;
+          
+          // Extract the JSON from the response
+          const jsonMatch = resultText.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            const analysisData = JSON.parse(jsonMatch[0]);
+            setAiAnalysis(analysisData);
+          } else {
+            throw new Error('Invalid AI response format');
+          }
+        } catch (error) {
+          console.error('Error analyzing content:', error);
+          setAnalyzeError('Could not analyze content. Please try again.');
+        } finally {
+          setIsAnalyzing(false);
+        }
+      }
+    }
+    
+    analyzeContent();
+  }, [isVisible, content, stats.words, aiAnalysis, isAnalyzing]);
 
   if (!isVisible) {
     return null
@@ -232,6 +307,120 @@ export default function StatisticsSidebar({ content, isVisible, onClose }: Stati
               : "Your text is very readable! Perfect for most audiences. Add some longer sentences if you want to convey more complex ideas."
             }
           </div>
+        </div>
+
+        {/* AI Creative Writing Analysis */}
+        <div className="mt-8">
+          <h3 className="font-serif text-lg text-amber-800 dark:text-amber-400 mb-3 flex items-center">
+            <span>Creative Analysis</span>
+            <svg className="w-4 h-4 ml-2 text-amber-600 dark:text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
+            </svg>
+          </h3>
+          
+          {isAnalyzing && (
+            <div className="bg-white dark:bg-gray-900 rounded-lg p-5 border border-amber-100 dark:border-amber-800/30 shadow-sm">
+              <div className="flex flex-col items-center justify-center py-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500"></div>
+                <p className="text-amber-600 dark:text-amber-500 mt-3 text-sm">Analyzing your writing...</p>
+              </div>
+            </div>
+          )}
+
+          {analyzeError && !isAnalyzing && (
+            <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-100 dark:border-red-800/50">
+              <p className="text-red-600 dark:text-red-400 text-sm">{analyzeError}</p>
+              <button 
+                className="text-xs mt-2 text-amber-600 dark:text-amber-500 hover:underline" 
+                onClick={() => {
+                  setAnalyzeError(null);
+                  setAiAnalysis(null);
+                }}
+              >
+                Try again
+              </button>
+            </div>
+          )}
+
+          {aiAnalysis && !isAnalyzing && (
+            <div className="space-y-4">
+              {/* Tone & Style */}
+              <div className="bg-white dark:bg-gray-900 rounded-lg p-4 border border-amber-100 dark:border-amber-800/50 shadow-sm transform transition-all duration-300 hover:shadow-md">
+                <h4 className="text-amber-800 dark:text-amber-400 text-sm font-medium mb-2">Tone & Style</h4>
+                <p className="text-gray-800 dark:text-gray-200">{aiAnalysis.tone}</p>
+              </div>
+              
+              {/* Strengths */}
+              <div className="bg-green-50 dark:bg-green-900/10 rounded-lg p-4 border border-green-100 dark:border-green-800/30">
+                <h4 className="text-green-700 dark:text-green-400 text-sm font-medium mb-2">Strengths</h4>
+                <ul className="list-disc pl-5 space-y-1">
+                  {aiAnalysis.strengths.map((strength, idx) => (
+                    <li key={idx} className="text-gray-800 dark:text-gray-200 text-sm">{strength}</li>
+                  ))}
+                </ul>
+              </div>
+              
+              {/* Suggestions */}
+              <div className="bg-amber-50 dark:bg-amber-900/10 rounded-lg p-4 border border-amber-100 dark:border-amber-800/30">
+                <h4 className="text-amber-700 dark:text-amber-400 text-sm font-medium mb-2">Suggestions</h4>
+                <ul className="list-disc pl-5 space-y-1">
+                  {aiAnalysis.suggestions.map((suggestion, idx) => (
+                    <li key={idx} className="text-gray-800 dark:text-gray-200 text-sm">{suggestion}</li>
+                  ))}
+                </ul>
+              </div>
+              
+              {/* Writing Elements */}
+              <div className="bg-white dark:bg-gray-900 rounded-lg p-4 border border-amber-100 dark:border-amber-800/50">
+                <h4 className="text-amber-800 dark:text-amber-400 text-sm font-medium mb-3">Writing Elements</h4>
+                
+                <div className="space-y-3">
+                  {/* Pacing */}
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-gray-600 dark:text-gray-400">Pacing</span>
+                    </div>
+                    <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded text-sm text-gray-800 dark:text-gray-200">
+                      {aiAnalysis.pacing}
+                    </div>
+                  </div>
+                  
+                  {/* Description */}
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-gray-600 dark:text-gray-400">Description</span>
+                    </div>
+                    <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded text-sm text-gray-800 dark:text-gray-200">
+                      {aiAnalysis.description}
+                    </div>
+                  </div>
+                  
+                  {/* Dialogue (if present) */}
+                  {aiAnalysis.dialogue && aiAnalysis.dialogue !== "null" && (
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="text-gray-600 dark:text-gray-400">Dialogue</span>
+                      </div>
+                      <div className="bg-gray-100 dark:bg-gray-800 p-2 rounded text-sm text-gray-800 dark:text-gray-200">
+                        {aiAnalysis.dialogue}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {!aiAnalysis && !isAnalyzing && !analyzeError && stats.words < 50 && (
+            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-100 dark:border-gray-700/50 text-center">
+              <p className="text-gray-600 dark:text-gray-400 text-sm">
+                Add more content to receive AI writing analysis.
+              </p>
+              <p className="text-gray-500 dark:text-gray-500 text-xs mt-1">
+                (Minimum 50 words required)
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Animated paper background element */}

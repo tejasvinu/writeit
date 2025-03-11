@@ -6,16 +6,20 @@ import { authOptions } from "../../auth/[...nextauth]/options"
 import { isValidObjectId } from 'mongoose'
 import { IDocument } from "@/models/Document"
 
-interface RouteContext {
-  params: { id: string }
-}
-
+// interface RouteContext {
+//   params: { id: string }
+// }
+// export type DocumentIdParams = {
+//   params: {
+//     id: string;
+//   };
+// };
 /**
  * Get a single document and its ancestors
  */
 export async function GET(
   request: NextRequest,
-  { params }: RouteContext
+  { params }: { params: { id: string } }
 ) {
   try {
     // Authentication check
@@ -24,7 +28,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { id } = params
+    const { id } = await params
     
     // Validate document ID format
     if (!isValidObjectId(id)) {
@@ -61,7 +65,7 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: RouteContext
+  { params }: { params: { id: string } }
 ) {
   try {
     // Authentication check
@@ -70,7 +74,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { id } = params
+    const { id } = await params
     
     // Validate document ID format
     if (!isValidObjectId(id)) {
@@ -212,7 +216,7 @@ export async function PATCH(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: RouteContext
+  { params }: { params: { id: string } }
 ) {
   try {
     // Authentication check
@@ -221,7 +225,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { id } = params
+    const { id } = await params
     
     // Validate document ID format
     if (!isValidObjectId(id)) {

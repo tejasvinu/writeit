@@ -10,6 +10,7 @@
     "migrate": "ts-node -P scripts/tsconfig.json scripts/migrate.ts"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.0",
     "@headlessui/react": "^2.2.0",
     "@heroicons/react": "^2.2.0",
     "@tiptap/pm": "^2.11.5",
