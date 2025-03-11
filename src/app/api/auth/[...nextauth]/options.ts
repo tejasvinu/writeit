@@ -1,4 +1,4 @@
-// filepath: c:\Users\workhorse\Documents\AI\writeit\src\app\api\auth\[...nextauth]\options.ts
+// filepath: c:\Users\workhorse\Documents\writeit\src\app\api\auth\[...nextauth]\options.ts
 import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { connectToDatabase } from "@/lib/mongodb"
@@ -65,7 +65,7 @@ export const authOptions: NextAuthOptions = {
         httpOnly: true,
         sameSite: "lax",
         path: "/",
-        secure: process.env.NODE_ENV === "production"
+        secure: true // Always use secure cookies in production and development
       }
     },
   },
