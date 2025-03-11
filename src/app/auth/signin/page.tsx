@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { signIn, useSession } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
 // Literary quotes that will rotate randomly for a surprise element
@@ -24,6 +24,8 @@ export default function SignIn() {
   const [isLoading, setIsLoading] = useState(false)
   const { status } = useSession()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const callbackUrl = searchParams.get('callbackUrl') || '/documents'
   
   // Animation states
   const [displayTitle, setDisplayTitle] = useState("")
@@ -34,7 +36,8 @@ export default function SignIn() {
 
   useEffect(() => {
     if (status === 'authenticated') {
-      router.push('/documents')
+      router.replace(callbackUrl)
+      return
     }
     
     // Typewriter effect for title
@@ -46,48 +49,43 @@ export default function SignIn() {
         i++
       } else {
         clearInterval(typing)
-        // Show quote after title finishes typing
         setRandomQuote(LITERARY_QUOTES[Math.floor(Math.random() * LITERARY_QUOTES.length)])
         setTimeout(() => setShowQuote(true), 500)
       }
     }, 80)
     
     return () => clearInterval(typing)
-  }, [status, router])
+  }, [status, router, callbackUrl])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError('')
-    setPageFlip(true) // Trigger page flip animation
+    setPageFlip(true)
     
-    // Add a small delay to show the page flip animation before actual signin
-    setTimeout(async () => {
-      try {
-        const result = await signIn('credentials', {
-          email,
-          password,
-          redirect: false,
-        })
-  
-        if (result?.error) {
-          setError(result.error)
-          setPageFlip(false) // Reset animation on error
-        } else if (result?.ok) {
-          setIsBookOpen(true) // Trigger book opening animation
-          setTimeout(() => {
-            router.push('/documents')
-          }, 1000) // Delay navigation to show animation
-        }
-      } catch (err: any) {
-        setError(err.message || 'An unexpected error occurred')
-        setPageFlip(false) // Reset animation on error
-      } finally {
-        if (!isBookOpen) {
-          setIsLoading(false)
-        }
+    try {
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+        callbackUrl
+      })
+
+      if (result?.error) {
+        setError(result.error)
+        setPageFlip(false)
+      } else if (result?.ok) {
+        setIsBookOpen(true)
+        router.replace(callbackUrl)
       }
-    }, 400)
+    } catch (err: any) {
+      setError(err.message || 'An unexpected error occurred')
+      setPageFlip(false)
+    } finally {
+      if (!isBookOpen) {
+        setIsLoading(false)
+      }
+    }
   }
 
   if (status === 'loading') {
