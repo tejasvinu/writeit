@@ -58,7 +58,6 @@ function EditorContent() {
             <ClientEditor 
               document={currentDocument} 
               onExit={handleExit} 
-              onToggleStats={() => setShowStats(prev => !prev)} 
             />
             
             {/* Statistics Sidebar */}
