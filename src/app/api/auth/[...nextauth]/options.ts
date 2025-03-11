@@ -65,7 +65,7 @@ export const authOptions: NextAuthOptions = {
         httpOnly: true,
         sameSite: "lax",
         path: "/",
-        secure: true // Always use secure cookies in production and development
+        secure: process.env.NODE_ENV === "production" // Only use secure in production
       }
     },
   },
