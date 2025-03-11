@@ -35,27 +35,49 @@ function SignInContent() {
   const [pageFlip, setPageFlip] = useState(false)
 
   useEffect(() => {
+    // Immediate redirect if already authenticated
     if (status === 'authenticated') {
-      router.replace(callbackUrl)
+      router.push(callbackUrl)
       return
     }
-    
-    // Typewriter effect for title
-    const fullTitle = "Welcome Back, Writer"
-    let i = 0
-    const typing = setInterval(() => {
-      if (i <= fullTitle.length) {
-        setDisplayTitle(fullTitle.substring(0, i))
-        i++
-      } else {
-        clearInterval(typing)
-        setRandomQuote(LITERARY_QUOTES[Math.floor(Math.random() * LITERARY_QUOTES.length)])
-        setTimeout(() => setShowQuote(true), 500)
-      }
-    }, 80)
-    
-    return () => clearInterval(typing)
+
+    // Only start animations if not authenticated
+    if (status === 'unauthenticated') {
+      // Typewriter effect for title
+      const fullTitle = "Welcome Back, Writer"
+      let i = 0
+      const typing = setInterval(() => {
+        if (i <= fullTitle.length) {
+          setDisplayTitle(fullTitle.substring(0, i))
+          i++
+        } else {
+          clearInterval(typing)
+          setRandomQuote(LITERARY_QUOTES[Math.floor(Math.random() * LITERARY_QUOTES.length)])
+          setTimeout(() => setShowQuote(true), 500)
+        }
+      }, 80)
+      
+      return () => clearInterval(typing)
+    }
   }, [status, router, callbackUrl])
+
+  // Show a loading state while checking authentication
+  if (status === 'loading') {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-stone-100 to-white dark:from-gray-900 dark:to-gray-800">
+        <div className="relative">
+          <div className="w-16 h-20 bg-amber-700 dark:bg-amber-600 rounded-sm animate-book-bounce"></div>
+          <div className="absolute top-0 left-0 w-16 h-20 border-r-4 border-amber-900 dark:border-amber-800 rounded-sm animate-page-turn"></div>
+          <p className="text-amber-800 dark:text-amber-400 mt-4">Loading your story...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // If authenticated, show nothing (will redirect)
+  if (status === 'authenticated') {
+    return null
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -86,18 +108,6 @@ function SignInContent() {
         setIsLoading(false)
       }
     }
-  }
-
-  if (status === 'loading') {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-stone-100 to-white dark:from-gray-900 dark:to-gray-800">
-        <div className="relative">
-          <div className="w-16 h-20 bg-amber-700 dark:bg-amber-600 rounded-sm animate-book-bounce"></div>
-          <div className="absolute top-0 left-0 w-16 h-20 border-r-4 border-amber-900 dark:border-amber-800 rounded-sm animate-page-turn"></div>
-          <p className="text-amber-800 dark:text-amber-400 mt-4">Loading your story...</p>
-        </div>
-      </div>
-    )
   }
 
   return (
