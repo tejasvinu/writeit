@@ -57,12 +57,25 @@ export const authOptions: NextAuthOptions = {
       }
       return session
     },
+    // Fix redirect issues on Vercel by explicitly handling redirects
     async redirect({ url, baseUrl }) {
-      // Allows relative URLs
-      if (url.startsWith("/")) return `${baseUrl}${url}`
-      // Allows callback URLs on the same origin
-      else if (new URL(url).origin === baseUrl) return url
-      return baseUrl
+      // Always redirect to /documents after successful sign-in
+      if (url.includes('/api/auth/signin') || url.includes('/auth/signin')) {
+        return `${baseUrl}/documents`;
+      }
+      
+      // Default case: if the URL is relative, prepend the base URL
+      if (url.startsWith('/')) {
+        return `${baseUrl}${url}`;
+      }
+      
+      // If it's on the same origin, allow it
+      if (new URL(url).origin === baseUrl) {
+        return url;
+      }
+      
+      // Default fallback is the base URL
+      return baseUrl;
     }
   },
   cookies: {

@@ -22,7 +22,7 @@ export default function SignIn() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const { status } = useSession()
+  const { data: session, status } = useSession()
   const router = useRouter()
   
   // Animation states
@@ -32,9 +32,16 @@ export default function SignIn() {
   const [showQuote, setShowQuote] = useState(false)
   const [pageFlip, setPageFlip] = useState(false)
 
+  // Check if user is already authenticated on initial load and on status changes
   useEffect(() => {
-    if (status === 'authenticated') {
-      router.push('/documents')
+    if (status === 'authenticated' && session) {
+      // Use a timeout to ensure the session is properly established
+      const redirectTimer = setTimeout(() => {
+        // Force hard navigation to documents page
+        window.location.href = '/documents'
+      }, 500)
+      
+      return () => clearTimeout(redirectTimer)
     }
     
     // Typewriter effect for title
@@ -53,7 +60,7 @@ export default function SignIn() {
     }, 80)
     
     return () => clearInterval(typing)
-  }, [status, router])
+  }, [status, session, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -75,8 +82,10 @@ export default function SignIn() {
           setPageFlip(false) // Reset animation on error
         } else if (result?.ok) {
           setIsBookOpen(true) // Trigger book opening animation
+          
+          // Use a direct navigation method after a short delay
           setTimeout(() => {
-            // Explicitly force navigation to /documents regardless of callbackUrl
+            // Hard navigation to ensure proper redirection in all environments
             window.location.href = '/documents'
           }, 1000) // Delay navigation to show animation
         }
@@ -91,6 +100,7 @@ export default function SignIn() {
     }, 400)
   }
 
+  // Show loading state while checking authentication status
   if (status === 'loading') {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-stone-100 to-white dark:from-gray-900 dark:to-gray-800">
