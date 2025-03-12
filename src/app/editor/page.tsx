@@ -14,23 +14,34 @@ function EditorContent() {
   const { currentDocument, loadDocument, isLoading } = useDocuments()
   const [showStats, setShowStats] = useState(false)
   const { status } = useSession()
-  const [authChecked, setAuthChecked] = useState(false)
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false)
+  const [contentLoading, setContentLoading] = useState(true)
 
-  // Check authentication status first
+  // Check authentication status once to avoid loops
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.replace('/auth/signin');
-    } else if (status === 'authenticated') {
-      setAuthChecked(true);
-    }
-  }, [status, router]);
+    if (!initialLoadComplete) {
+      setInitialLoadComplete(true);
 
-  // Load document after authentication is confirmed
-  useEffect(() => {
-    if (authChecked && documentId) {
-      loadDocument(documentId);
+      // Let middleware handle unauthorized users
+      if (status === 'authenticated' && documentId) {
+        loadDocument(documentId).finally(() => {
+          setContentLoading(false);
+        });
+      } else if (status === 'unauthenticated') {
+        // Let middleware handle redirect
+        setContentLoading(false);
+      }
     }
-  }, [documentId, loadDocument, authChecked]);
+  }, [status, documentId, loadDocument, initialLoadComplete]);
+
+  // When status changes to authenticated after initial load
+  useEffect(() => {
+    if (initialLoadComplete && status === 'authenticated' && documentId) {
+      loadDocument(documentId).finally(() => {
+        setContentLoading(false);
+      });
+    }
+  }, [status, initialLoadComplete, documentId, loadDocument]);
 
   // Handle exit from editor back to documents view
   const handleExit = () => {
@@ -55,7 +66,7 @@ function EditorContent() {
   }, [handleKeyDown])
 
   // Show loading state while checking authentication
-  if (status === 'loading' || (status === 'authenticated' && !authChecked)) {
+  if (contentLoading) {
     return (
       <div className="h-screen-minus-nav flex items-center justify-center bg-white dark:bg-background">
         <div className="relative">
@@ -66,6 +77,8 @@ function EditorContent() {
       </div>
     );
   }
+
+  // For unauthenticated state, middleware should handle redirect
 
   return (
     <div className="h-screen-minus-nav bg-white dark:bg-background relative">

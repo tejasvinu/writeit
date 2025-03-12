@@ -2,7 +2,6 @@
 
 import FileExplorer from "@/components/FileExplorer";
 import { useDocuments } from "@/context/DocumentContext";
-import { DocumentPlusIcon, FolderPlusIcon } from '@heroicons/react/24/outline';
 import { DocumentType } from "@/types/Document";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -11,21 +10,39 @@ import { useSession } from 'next-auth/react';
 export default function DocumentsPage() {
   const router = useRouter();
   const { status } = useSession();
-  const { createDocument, currentPath } = useDocuments();
+  const { createDocument, currentPath, fetchDocuments } = useDocuments();
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState('');
   const [isCreatingDocument, setIsCreatingDocument] = useState(false);
   const [newDocumentType, setNewDocumentType] = useState<DocumentType>('chapter');
   const [isLoading, setIsLoading] = useState(true);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
   useEffect(() => {
-    // Handle authentication
-    if (status === 'unauthenticated') {
-      router.replace('/auth/signin');
-    } else if (status === 'authenticated') {
-      setIsLoading(false);
+    // Only handle auth check once to avoid loops
+    if (!initialLoadComplete) {
+      setInitialLoadComplete(true);
+
+      // Let the middleware handle redirects for unauthorized users
+      if (status === 'authenticated') {
+        fetchDocuments().then(() => {
+          setIsLoading(false);
+        });
+      } else if (status === 'unauthenticated') {
+        // Let the middleware handle redirects
+        setIsLoading(false);
+      }
     }
-  }, [status, router]);
+  }, [status, fetchDocuments, initialLoadComplete]);
+
+  // When status changes to authenticated after initial load
+  useEffect(() => {
+    if (initialLoadComplete && status === 'authenticated') {
+      fetchDocuments().then(() => {
+        setIsLoading(false);
+      });
+    }
+  }, [status, initialLoadComplete, fetchDocuments]);
 
   const handleCreateDocument = async () => {
     const newDoc = await createDocument({
@@ -50,7 +67,7 @@ export default function DocumentsPage() {
     }
   };
 
-  // Show loading state while checking authentication
+  // Show loading state only during initial load
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] bg-gradient-to-b from-stone-100 to-white dark:from-gray-900 dark:to-gray-800">
@@ -63,10 +80,10 @@ export default function DocumentsPage() {
     );
   }
 
+  // For unauthenticated state, middleware should handle redirect
+
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)]">
-      {/* Header with actions */}
-      
       {/* Main content */}
       <div className="flex-1 overflow-hidden">
         <FileExplorer />
