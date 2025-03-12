@@ -76,7 +76,8 @@ export default function SignIn() {
         } else if (result?.ok) {
           setIsBookOpen(true) // Trigger book opening animation
           setTimeout(() => {
-            router.push('/documents')
+            // Explicitly force navigation to /documents regardless of callbackUrl
+            window.location.href = '/documents'
           }, 1000) // Delay navigation to show animation
         }
       } catch (err: any) {
