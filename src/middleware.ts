@@ -3,9 +3,13 @@ import { NextRequestWithAuth, withAuth } from 'next-auth/middleware';
 
 export default withAuth(
   function middleware(request: NextRequestWithAuth) {
-    // Ensure HTTPS in production
-    if (process.env.NODE_ENV === 'production' && !request.url.startsWith('https://')) {
-      return NextResponse.redirect(`https://${request.nextUrl.host}${request.nextUrl.pathname}`);
+    // Ensure HTTPS in production and handle Vercel-specific headers
+    if (process.env.NODE_ENV === 'production') {
+      const proto = request.headers.get("x-forwarded-proto");
+      if (proto === "http") {
+        const secureUrl = `https://${request.headers.get('host')}${request.nextUrl.pathname}`;
+        return NextResponse.redirect(secureUrl);
+      }
     }
 
     // If there's no valid session token, redirect to signin
@@ -20,7 +24,7 @@ export default withAuth(
     response.headers.set('X-Frame-Options', 'DENY');
     response.headers.set('X-Content-Type-Options', 'nosniff');
     response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-    response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+    response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
     
     return response;
   },

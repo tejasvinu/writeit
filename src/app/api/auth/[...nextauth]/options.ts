@@ -17,22 +17,27 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Please provide all required fields')
         }
 
-        await connectToDatabase()
+        try {
+          await connectToDatabase()
 
-        const user = await User.findOne({ email: credentials.email })
-        if (!user) {
-          throw new Error('No user found')
-        }
+          const user = await User.findOne({ email: credentials.email })
+          if (!user) {
+            throw new Error('Invalid email or password')
+          }
 
-        const isValid = await user.comparePassword(credentials.password)
-        if (!isValid) {
-          throw new Error('Invalid password')
-        }
+          const isValid = await user.comparePassword(credentials.password)
+          if (!isValid) {
+            throw new Error('Invalid email or password')
+          }
 
-        return {
-          id: user._id.toString(),
-          email: user.email,
-          name: user.name,
+          return {
+            id: user._id.toString(),
+            email: user.email,
+            name: user.name,
+          }
+        } catch (error) {
+          console.error('Auth error:', error)
+          throw error
         }
       }
     })
@@ -44,6 +49,7 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 days
+    updateAge: 24 * 60 * 60, // 24 hours
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -61,33 +67,33 @@ export const authOptions: NextAuthOptions = {
   },
   cookies: {
     sessionToken: {
-      name: `__Secure-next-auth.session-token`,
+      name: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token',
       options: {
         httpOnly: true,
         sameSite: "lax",
         path: "/",
-        secure: true
+        secure: process.env.NODE_ENV === 'production'
       }
     },
     callbackUrl: {
-      name: `__Secure-next-auth.callback-url`,
+      name: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.callback-url' : 'next-auth.callback-url',
       options: {
         httpOnly: true,
         sameSite: "lax",
         path: "/",
-        secure: true
+        secure: process.env.NODE_ENV === 'production'
       }
     },
     csrfToken: {
-      name: `__Host-next-auth.csrf-token`,
+      name: process.env.NODE_ENV === 'production' ? '__Host-next-auth.csrf-token' : 'next-auth.csrf-token',
       options: {
         httpOnly: true,
         sameSite: "lax",
         path: "/",
-        secure: true
+        secure: process.env.NODE_ENV === 'production'
       }
     }
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: false
+  debug: process.env.NODE_ENV === 'development'
 }
