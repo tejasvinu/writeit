@@ -39,6 +39,7 @@ export const authOptions: NextAuthOptions = {
   ],
   pages: {
     signIn: '/auth/signin',
+    error: '/auth/error',
   },
   session: {
     strategy: 'jwt',
@@ -53,21 +54,40 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as string
+        session.user.id = token.id
       }
       return session
-    },
+    }
   },
   cookies: {
     sessionToken: {
-      name: `next-auth.session-token`,
+      name: `__Secure-next-auth.session-token`,
       options: {
         httpOnly: true,
         sameSite: "lax",
         path: "/",
-        secure: process.env.NODE_ENV === "production"
+        secure: true
       }
     },
+    callbackUrl: {
+      name: `__Secure-next-auth.callback-url`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: true
+      }
+    },
+    csrfToken: {
+      name: `__Host-next-auth.csrf-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: true
+      }
+    }
   },
-  debug: process.env.NODE_ENV === "development",
+  secret: process.env.NEXTAUTH_SECRET,
+  debug: false
 }
