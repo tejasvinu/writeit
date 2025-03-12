@@ -11,7 +11,7 @@ const MAX_REQUESTS = 5 // Max 5 signup attempts per hour
 export async function POST(request: Request) {
   try {
     // Rate limiting
-    const headersList = headers()
+    const headersList = await headers()
     const ip = (headersList.get('x-forwarded-for') || 'unknown').split(',')[0]
     const now = Date.now()
     

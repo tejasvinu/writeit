@@ -25,7 +25,7 @@ export function validateEnv() {
   // Validate NEXTAUTH_URL format in production
   if (process.env.NODE_ENV === 'production') {
     try {
-      const url = new URL(process.env.NEXTAUTH_URL);
+      const url = new URL(process.env.NEXTAUTH_URL as string);
       if (url.protocol !== 'https:') {
         throw new Error('NEXTAUTH_URL must use HTTPS in production');
       }
@@ -35,7 +35,7 @@ export function validateEnv() {
   }
 
   // Validate NEXTAUTH_SECRET length
-  if (process.env.NEXTAUTH_SECRET?.length < 32) {
+  if ((process.env.NEXTAUTH_SECRET as string).length < 32) {
     throw new Error(
       'NEXTAUTH_SECRET must be at least 32 characters long.\n' +
       'You can generate a secure secret using: openssl rand -base64 32'

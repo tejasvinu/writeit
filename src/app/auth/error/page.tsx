@@ -69,3 +69,4 @@ export default function AuthError() {
       </div>
     </div>
   )
+}
