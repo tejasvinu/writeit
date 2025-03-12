@@ -37,7 +37,8 @@ function SignInContent() {
   useEffect(() => {
     // Immediate redirect if already authenticated
     if (status === 'authenticated') {
-      router.push(callbackUrl)
+      // Use window.location for more reliable redirection in production
+      window.location.href = callbackUrl;
       return
     }
 
@@ -98,7 +99,8 @@ function SignInContent() {
         setPageFlip(false)
       } else if (result?.ok) {
         setIsBookOpen(true)
-        router.replace(callbackUrl)
+        // Use window.location for more reliable redirection especially in production
+        window.location.href = callbackUrl;
       }
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred')
