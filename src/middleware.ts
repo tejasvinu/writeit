@@ -41,12 +41,10 @@ export default withAuth(
 
 export const config = {
   matcher: [
-    // Match all routes that need protection
+    // Match specific protected routes
     '/documents/:path*', 
     '/editor/:path*',
     '/api/documents/:path*',
     '/api/ai/:path*',
-    // Exclude auth-related API routes and public assets
-    '/((?!api/auth|_next/static|_next/image|favicon.ico).*)',
   ],
 };
