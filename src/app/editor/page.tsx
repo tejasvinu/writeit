@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { useDocuments } from '@/context/DocumentContext'
 import ClientEditor from '@/components/ClientEditor'
 import StatisticsSidebar from '@/components/StatisticsSidebar'
+import { useSession } from 'next-auth/react'
 
 function EditorContent() {
   const searchParams = useSearchParams()
@@ -12,12 +13,24 @@ function EditorContent() {
   const documentId = searchParams.get('id')
   const { currentDocument, loadDocument, isLoading } = useDocuments()
   const [showStats, setShowStats] = useState(false)
+  const { status } = useSession()
+  const [authChecked, setAuthChecked] = useState(false)
 
+  // Check authentication status first
   useEffect(() => {
-    if (documentId) {
-      loadDocument(documentId)
+    if (status === 'unauthenticated') {
+      router.replace('/auth/signin');
+    } else if (status === 'authenticated') {
+      setAuthChecked(true);
     }
-  }, [documentId, loadDocument])
+  }, [status, router]);
+
+  // Load document after authentication is confirmed
+  useEffect(() => {
+    if (authChecked && documentId) {
+      loadDocument(documentId);
+    }
+  }, [documentId, loadDocument, authChecked]);
 
   // Handle exit from editor back to documents view
   const handleExit = () => {
@@ -40,6 +53,19 @@ function EditorContent() {
       window.removeEventListener('keydown', handleKeyDown)
     }
   }, [handleKeyDown])
+
+  // Show loading state while checking authentication
+  if (status === 'loading' || (status === 'authenticated' && !authChecked)) {
+    return (
+      <div className="h-screen-minus-nav flex items-center justify-center bg-white dark:bg-background">
+        <div className="relative">
+          <div className="w-16 h-20 bg-amber-700 dark:bg-amber-600 rounded-sm animate-book-bounce"></div>
+          <div className="absolute top-0 left-0 w-16 h-20 border-r-4 border-amber-900 dark:border-amber-800 rounded-sm animate-page-turn"></div>
+          <p className="text-amber-800 dark:text-amber-400 mt-4">Preparing your editor...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen-minus-nav bg-white dark:bg-background relative">
