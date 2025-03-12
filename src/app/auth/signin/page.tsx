@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect } from 'react'
 import { signIn, useSession } from 'next-auth/react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 // Literary quotes that will rotate randomly for a surprise element
@@ -17,9 +17,7 @@ const LITERARY_QUOTES = [
   { text: "Writing is the painting of the voice.", author: "Voltaire" }
 ]
 
-function SignInContent() {
-  const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get('callbackUrl') || '/documents'
+export default function SignIn() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -35,34 +33,63 @@ function SignInContent() {
   const [pageFlip, setPageFlip] = useState(false)
 
   useEffect(() => {
-    // Immediate redirect if already authenticated
     if (status === 'authenticated') {
-      // Use window.location for more reliable redirection in production
-      window.location.href = callbackUrl;
-      return
+      router.push('/documents')
     }
+    
+    // Typewriter effect for title
+    const fullTitle = "Welcome Back, Writer"
+    let i = 0
+    const typing = setInterval(() => {
+      if (i <= fullTitle.length) {
+        setDisplayTitle(fullTitle.substring(0, i))
+        i++
+      } else {
+        clearInterval(typing)
+        // Show quote after title finishes typing
+        setRandomQuote(LITERARY_QUOTES[Math.floor(Math.random() * LITERARY_QUOTES.length)])
+        setTimeout(() => setShowQuote(true), 500)
+      }
+    }, 80)
+    
+    return () => clearInterval(typing)
+  }, [status, router])
 
-    // Only start animations if not authenticated
-    if (status === 'unauthenticated') {
-      // Typewriter effect for title
-      const fullTitle = "Welcome Back, Writer"
-      let i = 0
-      const typing = setInterval(() => {
-        if (i <= fullTitle.length) {
-          setDisplayTitle(fullTitle.substring(0, i))
-          i++
-        } else {
-          clearInterval(typing)
-          setRandomQuote(LITERARY_QUOTES[Math.floor(Math.random() * LITERARY_QUOTES.length)])
-          setTimeout(() => setShowQuote(true), 500)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+    setError('')
+    setPageFlip(true) // Trigger page flip animation
+    
+    // Add a small delay to show the page flip animation before actual signin
+    setTimeout(async () => {
+      try {
+        const result = await signIn('credentials', {
+          email,
+          password,
+          redirect: false,
+        })
+  
+        if (result?.error) {
+          setError(result.error)
+          setPageFlip(false) // Reset animation on error
+        } else if (result?.ok) {
+          setIsBookOpen(true) // Trigger book opening animation
+          setTimeout(() => {
+            router.push('/documents')
+          }, 1000) // Delay navigation to show animation
         }
-      }, 80)
-      
-      return () => clearInterval(typing)
-    }
-  }, [status, router, callbackUrl])
+      } catch (err: any) {
+        setError(err.message || 'An unexpected error occurred')
+        setPageFlip(false) // Reset animation on error
+      } finally {
+        if (!isBookOpen) {
+          setIsLoading(false)
+        }
+      }
+    }, 400)
+  }
 
-  // Show a loading state while checking authentication
   if (status === 'loading') {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-stone-100 to-white dark:from-gray-900 dark:to-gray-800">
@@ -73,43 +100,6 @@ function SignInContent() {
         </div>
       </div>
     )
-  }
-
-  // If authenticated, show nothing (will redirect)
-  if (status === 'authenticated') {
-    return null
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError('')
-    setPageFlip(true)
-    
-    try {
-      const result = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
-        callbackUrl
-      })
-
-      if (result?.error) {
-        setError(result.error)
-        setPageFlip(false)
-      } else if (result?.ok) {
-        setIsBookOpen(true)
-        // Use window.location for more reliable redirection especially in production
-        window.location.href = callbackUrl;
-      }
-    } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred')
-      setPageFlip(false)
-    } finally {
-      if (!isBookOpen) {
-        setIsLoading(false)
-      }
-    }
   }
 
   return (
@@ -326,21 +316,5 @@ function SignInContent() {
         </div>
       </div>
     </div>
-  )
-}
-
-export default function SignIn() {
-  return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-stone-100 to-white dark:from-gray-900 dark:to-gray-800">
-        <div className="relative">
-          <div className="w-16 h-20 bg-amber-700 dark:bg-amber-600 rounded-sm animate-book-bounce"></div>
-          <div className="absolute top-0 left-0 w-16 h-20 border-r-4 border-amber-900 dark:border-amber-800 rounded-sm animate-page-turn"></div>
-          <p className="text-amber-800 dark:text-amber-400 mt-4">Loading your story...</p>
-        </div>
-      </div>
-    }>
-      <SignInContent />
-    </Suspense>
   )
 }
