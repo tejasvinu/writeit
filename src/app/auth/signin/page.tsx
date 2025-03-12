@@ -35,10 +35,9 @@ export default function SignIn() {
   // Check if user is already authenticated on initial load and on status changes
   useEffect(() => {
     if (status === 'authenticated' && session) {
-      // Use a timeout to ensure the session is properly established
+      // Use Next.js router for better client-side navigation
       const redirectTimer = setTimeout(() => {
-        // Force hard navigation to documents page
-        window.location.href = '/documents'
+        router.push('/documents')
       }, 500)
       
       return () => clearTimeout(redirectTimer)
@@ -80,22 +79,19 @@ export default function SignIn() {
         if (result?.error) {
           setError(result.error)
           setPageFlip(false) // Reset animation on error
+          setIsLoading(false)
         } else if (result?.ok) {
           setIsBookOpen(true) // Trigger book opening animation
           
-          // Use a direct navigation method after a short delay
+          // Use Next.js router for client-side navigation after animation
           setTimeout(() => {
-            // Hard navigation to ensure proper redirection in all environments
-            window.location.href = '/documents'
+            router.push('/documents')
           }, 1000) // Delay navigation to show animation
         }
       } catch (err: any) {
         setError(err.message || 'An unexpected error occurred')
         setPageFlip(false) // Reset animation on error
-      } finally {
-        if (!isBookOpen) {
-          setIsLoading(false)
-        }
+        setIsLoading(false)
       }
     }, 400)
   }
