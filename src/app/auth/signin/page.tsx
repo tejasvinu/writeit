@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { signIn, useSession } from 'next-auth/react'
+import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
@@ -22,7 +22,6 @@ export default function SignIn() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const { data: session, status } = useSession()
   const router = useRouter()
   
   // Animation states
@@ -32,17 +31,7 @@ export default function SignIn() {
   const [showQuote, setShowQuote] = useState(false)
   const [pageFlip, setPageFlip] = useState(false)
 
-  // Check if user is already authenticated on initial load and on status changes
   useEffect(() => {
-    if (status === 'authenticated' && session) {
-      // Use Next.js router for better client-side navigation
-      const redirectTimer = setTimeout(() => {
-        router.push('/documents')
-      }, 500)
-      
-      return () => clearTimeout(redirectTimer)
-    }
-    
     // Typewriter effect for title
     const fullTitle = "Welcome Back, Writer"
     let i = 0
@@ -59,7 +48,7 @@ export default function SignIn() {
     }, 80)
     
     return () => clearInterval(typing)
-  }, [status, session, router])
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -94,19 +83,6 @@ export default function SignIn() {
         setIsLoading(false)
       }
     }, 400)
-  }
-
-  // Show loading state while checking authentication status
-  if (status === 'loading') {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-stone-100 to-white dark:from-gray-900 dark:to-gray-800">
-        <div className="relative">
-          <div className="w-16 h-20 bg-amber-700 dark:bg-amber-600 rounded-sm animate-book-bounce"></div>
-          <div className="absolute top-0 left-0 w-16 h-20 border-r-4 border-amber-900 dark:border-amber-800 rounded-sm animate-page-turn"></div>
-          <p className="text-amber-800 dark:text-amber-400 mt-4">Loading your story...</p>
-        </div>
-      </div>
-    )
   }
 
   return (

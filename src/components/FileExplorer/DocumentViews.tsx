@@ -45,7 +45,7 @@ export function DocumentViews({ documents, onContextMenu, onFolderClick, onHover
     if (doc.isFolder) {
       onFolderClick(doc)
     } else {
-      window.location.href = `/editor?id=${doc._id}`
+      router.push(`/editor?id=${doc._id}`)
     }
   }
 

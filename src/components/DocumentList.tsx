@@ -5,6 +5,7 @@ import { useDocuments } from '@/context/DocumentContext'
 import Link from 'next/link'
 import FileExplorer from './FileExplorer'
 import { FolderPlusIcon, DocumentPlusIcon } from '@heroicons/react/24/outline'
+import { useRouter } from 'next/navigation'
 
 export default function DocumentList() {
   const {
@@ -18,6 +19,7 @@ export default function DocumentList() {
   const [isCreating, setIsCreating] = useState(false)
   const [newTitle, setNewTitle] = useState('')
   const [buttonHovered, setButtonHovered] = useState<string | null>(null)
+  const router = useRouter()
 
   const handleCreateNew = async (isFolder: boolean = false) => {
     setIsCreating(true)
@@ -28,7 +30,7 @@ export default function DocumentList() {
         parentPath: currentPath,
       })
       if (!isFolder) {
-        window.location.href = `/editor?id=${doc._id}`
+        router.push(`/editor?id=${doc._id}`)
       }
     } catch (error) {
       console.error('Failed to create document:', error)
