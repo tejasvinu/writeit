@@ -1,4 +1,4 @@
-// filepath: c:\Users\workhorse\Documents\writeit\src\app\api\auth\[...nextauth]\options.ts
+// filepath: c:\Users\workhorse\Documents\AI\writeit\src\app\api\auth\[...nextauth]\options.ts
 import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { connectToDatabase } from "@/lib/mongodb"
@@ -57,26 +57,6 @@ export const authOptions: NextAuthOptions = {
       }
       return session
     },
-    // Fix redirect issues on Vercel by explicitly handling redirects
-    async redirect({ url, baseUrl }) {
-      // Always redirect to /documents after successful sign-in
-      if (url.includes('/api/auth/signin') || url.includes('/auth/signin')) {
-        return `${baseUrl}/documents`;
-      }
-      
-      // Default case: if the URL is relative, prepend the base URL
-      if (url.startsWith('/')) {
-        return `${baseUrl}${url}`;
-      }
-      
-      // If it's on the same origin, allow it
-      if (new URL(url).origin === baseUrl) {
-        return url;
-      }
-      
-      // Default fallback is the base URL
-      return baseUrl;
-    }
   },
   cookies: {
     sessionToken: {
